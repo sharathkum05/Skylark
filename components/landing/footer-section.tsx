@@ -10,12 +10,6 @@ const footerLinks = {
     { name: "Integrations", href: "#integrations" },
     { name: "Security", href: "#security" },
   ],
-  Company: [
-    { name: "About", href: "#" },
-    { name: "Blog", href: "#" },
-    { name: "Careers", href: "#", badge: "Hiring" },
-    { name: "Contact", href: "#" },
-  ],
   Legal: [
     { name: "Privacy", href: "#" },
     { name: "Terms", href: "#" },
@@ -25,8 +19,8 @@ const footerLinks = {
 
 const socialLinks = [
   { name: "Twitter", href: "#" },
-  { name: "GitHub", href: "#" },
-  { name: "LinkedIn", href: "#" },
+  { name: "GitHub", href: "https://github.com/sharathkum05" },
+  { name: "LinkedIn", href: "https://www.linkedin.com/in/sharath0524/" },
 ];
 
 export function FooterSection() {
@@ -96,7 +90,7 @@ export function FooterSection() {
         {/* Bottom Bar */}
         <div className="py-8 border-t border-foreground/10 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            2025 Skylark. All rights reserved.
+            2026 Skylark. All rights reserved.
           </p>
 
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
