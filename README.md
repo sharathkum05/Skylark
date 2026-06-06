@@ -82,6 +82,34 @@ a **server-side** tool, because its results have to flow back into the model's
 context. That's intentionally **not built in v0** — there's a clear `TODO` in
 `src/assistant.ts` marking where it goes.
 
+## Let people call the agent from a real phone
+
+The page demo is an **in-browser** call. To let anyone **dial the agent from a real
+phone**, Vapi gives you a phone number and routes inbound calls to a *persistent*
+assistant (the web app uses an ephemeral one that only lives during a browser call).
+
+> 🔴 Rotate your **private** key first (dashboard.vapi.ai → API Keys). Phone setup
+> uses the private key, which must never be in the frontend.
+
+**Option A — dashboard (no code):** create an assistant from [src/assistant.ts](src/assistant.ts),
+buy a free number under **Phone Numbers**, and set its **Inbound → Assistant** to it.
+
+**Option B — script (in repo):**
+
+```bash
+export VAPI_PRIVATE_KEY=pk_your_NEW_private_key
+npm run provision:phone     # creates assistant + buys a number + links them
+```
+
+It prints the number people can call. Then add it to `.env` so the page shows a
+**"Call from your phone"** button:
+
+```bash
+VITE_VAPI_PHONE_NUMBER=+14155550123
+```
+
+> Telephony bills per minute on your Vapi account; the Vapi number itself is free.
+
 ## Evals
 
 See [`evals/`](evals/) — ~10 scripted scenarios and a scoring rubric (task

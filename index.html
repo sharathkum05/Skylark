@@ -73,6 +73,15 @@
             <span class="kbd">▲</span> Dial in on the keypad, then press
             <span class="hint-call">Call</span>. Allow your mic when asked.
           </div>
+
+          <!-- Real phone CTA: shown only when VITE_VAPI_PHONE_NUMBER is set. -->
+          <a class="phone-cta" id="phone-cta" href="#" hidden>
+            <span class="phone-cta-glyph" aria-hidden="true">📱</span>
+            <span class="phone-cta-text">
+              <small>Or call from your phone</small>
+              <strong id="phone-cta-number"></strong>
+            </span>
+          </a>
         </div>
 
         <!-- ====================== THE PHONE DEVICE ===================== -->

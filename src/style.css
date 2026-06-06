@@ -155,6 +155,26 @@ body {
   border-radius: 6px; padding: 1px 7px;
 }
 
+.phone-cta {
+  display: inline-flex; align-items: center; gap: 12px; margin-top: 18px;
+  text-decoration: none; color: var(--ink);
+  background: var(--bg-2); border: 1px solid var(--line);
+  border-radius: 14px; padding: 12px 18px;
+  transition: border-color .15s, transform .06s, box-shadow .15s;
+}
+.phone-cta:hover { border-color: var(--green); box-shadow: 0 10px 30px -16px rgba(52,224,161,0.6); }
+.phone-cta:active { transform: translateY(1px); }
+.phone-cta-glyph { font-size: 22px; }
+.phone-cta-text { display: flex; flex-direction: column; line-height: 1.25; }
+.phone-cta-text small {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--ink-faint);
+}
+.phone-cta-text strong {
+  font-size: 18px; font-weight: 800; letter-spacing: 0.02em; color: var(--green);
+  font-variant-numeric: tabular-nums;
+}
+
 /* ====================== PHONE DEVICE ====================== */
 .device-wrap { position: relative; display: flex; justify-content: center; }
 .device {

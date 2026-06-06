@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "provision:phone": "node scripts/provision-phone.mjs"
   },
   "devDependencies": {
     "typescript": "^5.5.4",

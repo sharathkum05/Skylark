@@ -422,5 +422,15 @@ muteBtn.addEventListener("click", () => {
 if (import.meta.env.VITE_VAPI_PUBLIC_KEY) {
   keyInput.placeholder = "using .env key — paste to override";
 }
+
+// Real phone CTA: reveal only when a number is configured (see provision-phone).
+const phoneNumber = (import.meta.env.VITE_VAPI_PHONE_NUMBER ?? "").trim();
+if (phoneNumber) {
+  const cta = $<HTMLAnchorElement>("phone-cta");
+  cta.href = `tel:${phoneNumber.replace(/[^\d+]/g, "")}`;
+  $("phone-cta-number").textContent = phoneNumber;
+  cta.hidden = false;
+}
+
 refreshDial();
 setStatus("idle");
