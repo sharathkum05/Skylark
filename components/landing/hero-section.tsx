@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { AnimatedSphere } from "./animated-sphere";
 
-const words = ["create", "build", "scale", "ship"];
+const words = ["calls", "books", "waits", "confirms"];
 
 export function HeroSection() {
   const [isVisible, setIsVisible] = useState(false);
@@ -64,7 +64,7 @@ export function HeroSection() {
         >
           <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground">
             <span className="w-8 h-px bg-foreground/30" />
-            The platform for modern teams
+            Phone calls so you don&apos;t have to
           </span>
         </div>
         
@@ -75,9 +75,9 @@ export function HeroSection() {
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
             }`}
           >
-            <span className="block">The platform</span>
+            <span className="block">The assistant</span>
             <span className="block">
-              to{" "}
+              that{" "}
               <span className="relative inline-block">
                 <span 
                   key={wordIndex}
@@ -108,8 +108,9 @@ export function HeroSection() {
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
           >
-            Your toolkit to stop configuring and start innovating. 
-            Securely build, deploy, and scale the best experiences.
+            Tell Skylark what you need. It dials the business, waits on hold,
+            navigates phone trees, and talks to whoever answers — then reports
+            back, so you never have to pick up the phone.
           </p>
           
           {/* CTAs */}
@@ -122,7 +123,7 @@ export function HeroSection() {
               size="lg" 
               className="bg-foreground hover:bg-foreground/90 text-background px-8 h-14 text-base rounded-full group"
             >
-              Start free trial
+              Make your first call
               <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
             </Button>
             <Button 
@@ -147,10 +148,10 @@ export function HeroSection() {
           {[...Array(2)].map((_, i) => (
             <div key={i} className="flex gap-16">
               {[
-                { value: "20 days", label: "saved on builds", company: "NETFLIX" },
-                { value: "98%", label: "faster deployment", company: "STRIPE" },
-                { value: "300%", label: "throughput increase", company: "LINEAR" },
-                { value: "6x", label: "faster to ship", company: "NOTION" },
+                { value: "33", label: "countries reached", company: "GLOBAL" },
+                { value: "15", label: "languages spoken", company: "MULTILINGUAL" },
+                { value: "10", label: "calls at once", company: "IN PARALLEL" },
+                { value: "30%", label: "better than live reps", company: "CONVERSION" },
               ].map((stat) => (
                 <div key={`${stat.company}-${i}`} className="flex items-baseline gap-4">
                   <span className="text-4xl lg:text-5xl font-display">{stat.value}</span>

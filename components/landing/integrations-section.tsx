@@ -3,18 +3,18 @@
 import { useEffect, useState, useRef } from "react";
 
 const integrations = [
-  { name: "GitHub", category: "Version Control" },
-  { name: "Slack", category: "Communication" },
-  { name: "Stripe", category: "Payments" },
-  { name: "PostgreSQL", category: "Database" },
-  { name: "Redis", category: "Cache" },
-  { name: "AWS", category: "Cloud" },
-  { name: "MongoDB", category: "Database" },
-  { name: "Vercel", category: "Hosting" },
-  { name: "Figma", category: "Design" },
-  { name: "Linear", category: "Project Management" },
-  { name: "Notion", category: "Documentation" },
-  { name: "OpenAI", category: "AI/ML" },
+  { name: "Restaurants", category: "Reservations" },
+  { name: "Clinics", category: "Appointments" },
+  { name: "Dentists", category: "Appointments" },
+  { name: "Pharmacies", category: "Prescription refills" },
+  { name: "Retail stores", category: "Stock checks" },
+  { name: "Airlines", category: "Changes & holds" },
+  { name: "Utilities", category: "Billing & disputes" },
+  { name: "Salons", category: "Bookings" },
+  { name: "Google Calendar", category: "Scheduling" },
+  { name: "Gmail", category: "Summaries" },
+  { name: "Slack", category: "Notifications" },
+  { name: "Zapier", category: "Automation" },
 ];
 
 export function IntegrationsSection() {
@@ -48,12 +48,13 @@ export function IntegrationsSection() {
             <span className="w-8 h-px bg-foreground/30" />
           </span>
           <h2 className="text-4xl lg:text-6xl font-display tracking-tight mb-6">
-            Works with everything
+            Calls anyone.
             <br />
-            you already use.
+            Fits where you work.
           </h2>
           <p className="text-xl text-muted-foreground">
-            200+ pre-built integrations. Connect your entire stack in minutes.
+            From restaurants to billing departments — Skylark makes the call and
+            drops the result into the tools you already use.
           </p>
         </div>
 

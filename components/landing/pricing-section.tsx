@@ -6,46 +6,46 @@ import { ArrowRight, Check } from "lucide-react";
 const plans = [
   {
     name: "Starter",
-    description: "For individuals and small projects",
+    description: "For trying Skylark out",
     price: { monthly: 0, annual: 0 },
     features: [
-      "Up to 3 projects",
-      "1GB storage",
+      "5 calls per month",
+      "Live transcripts",
+      "Email summaries",
+      "One task at a time",
       "Community support",
-      "Basic analytics",
-      "SSL certificates",
     ],
     cta: "Start free",
     popular: false,
   },
   {
     name: "Pro",
-    description: "For growing teams and businesses",
+    description: "For people who hate the phone",
     price: { monthly: 29, annual: 24 },
     features: [
-      "Unlimited projects",
-      "100GB storage",
-      "Priority support",
-      "Advanced analytics",
-      "Custom domains",
-      "Team collaboration",
-      "API access",
+      "Unlimited calls",
+      "Call up to 5 places at once",
+      "Priority calling",
+      "Calendar integration",
+      "Call recordings",
+      "33 countries, 15 languages",
+      "Callback handling",
     ],
     cta: "Start trial",
     popular: true,
   },
   {
     name: "Enterprise",
-    description: "For large-scale operations",
+    description: "For teams and businesses",
     price: { monthly: null, annual: null },
     features: [
       "Everything in Pro",
-      "Unlimited storage",
-      "24/7 dedicated support",
-      "Custom integrations",
+      "Unlimited parallel calls",
+      "Dedicated phone numbers",
+      "Custom voice & scripts",
+      "API access",
       "SLA guarantee",
-      "On-premise option",
-      "Security audit",
+      "SSO & audit logs",
       "Custom contracts",
     ],
     cta: "Contact sales",
@@ -70,7 +70,7 @@ export function PricingSection() {
             <span className="text-stroke">pricing</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-xl">
-            Start free and scale as you grow. No hidden fees, no surprises.
+            Start free. Pay for the minutes you use. No subscriptions to forget about.
           </p>
         </div>
 
@@ -172,7 +172,7 @@ export function PricingSection() {
 
         {/* Bottom Note */}
         <p className="mt-12 text-center text-sm text-muted-foreground">
-          All plans include automatic updates, HTTPS, and DDoS protection.{" "}
+          All plans include live transcripts, call recordings, and full task history.{" "}
           <a href="#" className="underline underline-offset-4 hover:text-foreground transition-colors">
             Compare all features
           </a>

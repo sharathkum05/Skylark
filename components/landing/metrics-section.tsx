@@ -45,29 +45,29 @@ function AnimatedCounter({ end, suffix = "", prefix = "" }: { end: number; suffi
 }
 
 const metrics = [
-  { 
-    value: 2847392, 
-    suffix: "", 
+  {
+    value: 128934,
+    suffix: "",
     prefix: "",
-    label: "API requests today",
+    label: "Calls handled this month",
   },
-  { 
-    value: 99, 
-    suffix: ".99%", 
+  {
+    value: 92,
+    suffix: "%",
     prefix: "",
-    label: "Uptime this quarter",
+    label: "Tasks done on the first try",
   },
-  { 
-    value: 23, 
-    suffix: "ms", 
+  {
+    value: 12,
+    suffix: " min",
     prefix: "",
-    label: "Average response time",
+    label: "Saved on the average call",
   },
-  { 
-    value: 184, 
-    suffix: "", 
+  {
+    value: 33,
+    suffix: "",
     prefix: "",
-    label: "Countries served",
+    label: "Countries reached",
   },
 ];
 

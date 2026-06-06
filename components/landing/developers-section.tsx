@@ -21,17 +21,15 @@ const skylark = new Skylark({
 })`,
   },
   {
-    label: "Deploy",
-    code: `const app = await skylark.deploy({
-  name: 'my-app',
-  region: 'auto',
-  scaling: {
-    min: 1,
-    max: 100
-  }
+    label: "Call",
+    code: `const call = await skylark.call({
+  to: '+1 415 555 0123',
+  task: 'Book a table for 2 at 7pm',
+  callback: '+1 415 555 0199'
 })
 
-console.log('Live at:', app.url)`,
+console.log(call.result.summary)
+// "Booked Fri 7pm — conf LG-4821"`,
   },
 ];
 
@@ -127,8 +125,8 @@ export function DevelopersSection() {
               <span className="text-muted-foreground">For devs.</span>
             </h2>
             <p className="text-xl text-muted-foreground mb-12 leading-relaxed">
-              A thoughtfully designed SDK that gets out of your way. 
-              Ship faster with intuitive APIs and exceptional documentation.
+              A clean API to place calls from your own apps. Kick off a call,
+              stream the transcript, and get a structured result back.
             </p>
             
             {/* Features */}

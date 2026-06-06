@@ -4,32 +4,32 @@ import { useEffect, useState } from "react";
 
 const testimonials = [
   {
-    quote: "Skylark transformed our deployment pipeline. What used to take hours now happens in seconds.",
+    quote: "I needed an eye exam this week. Skylark called fifteen optometrists and booked one in six minutes.",
     author: "Sarah Chen",
-    role: "CTO",
-    company: "Meridian Labs",
-    metric: "10x faster deployments",
+    role: "Busy parent",
+    company: "San Francisco",
+    metric: "Booked in 6 minutes",
   },
   {
-    quote: "The developer experience is unmatched. Our team's productivity has never been higher.",
+    quote: "It sat on hold with my insurance for forty minutes so I didn't have to. I just got the result.",
     author: "Marcus Webb",
-    role: "Engineering Lead",
-    company: "Flux Systems",
-    metric: "40% more features shipped",
-  },
-  {
-    quote: "Finally, infrastructure that scales with our ambition. Zero downtime since we switched.",
-    author: "Elena Rodriguez",
-    role: "VP Engineering",
-    company: "Beacon AI",
-    metric: "99.99% uptime",
-  },
-  {
-    quote: "The integrations are seamless. We connected our entire stack in a single afternoon.",
-    author: "James Liu",
     role: "Founder",
-    company: "Prism Analytics",
-    metric: "50+ integrations used",
+    company: "Flux Systems",
+    metric: "40 min on hold, skipped",
+  },
+  {
+    quote: "Skylark rang five restaurants on a Friday night and found us a table. I didn't lift a finger.",
+    author: "Elena Rodriguez",
+    role: "Operations lead",
+    company: "Beacon Health",
+    metric: "5 calls, 1 table",
+  },
+  {
+    quote: "Disputed a wrong charge with my carrier — Skylark handled the whole phone tree and got it refunded.",
+    author: "James Liu",
+    role: "Freelancer",
+    company: "Brooklyn",
+    metric: "Charge refunded",
   },
 ];
 
@@ -138,7 +138,7 @@ export function TestimonialsSection() {
         {/* Company Logos Marquee Label */}
         <div className="mt-24 pt-12 border-t border-foreground/10">
           <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase mb-8 text-center">
-            Trusted by forward-thinking teams
+            Trusted by busy people everywhere
           </p>
         </div>
       </div>

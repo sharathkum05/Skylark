@@ -52,14 +52,14 @@ export function CtaSection() {
               {/* Left content */}
               <div className="flex-1">
                 <h2 className="text-4xl lg:text-7xl font-display tracking-tight mb-8 leading-[0.95]">
-                  Ready to build
+                  Ready to skip
                   <br />
-                  something great?
+                  the phone?
                 </h2>
 
                 <p className="text-xl text-muted-foreground mb-12 leading-relaxed max-w-xl">
-                  Join thousands of teams shipping faster with Skylark. 
-                  Start free, scale infinitely.
+                  Join thousands of people who let Skylark make the call.
+                  Start free, no credit card.
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-start gap-4">
@@ -67,7 +67,7 @@ export function CtaSection() {
                     size="lg"
                     className="bg-foreground hover:bg-foreground/90 text-background px-8 h-14 text-base rounded-full group"
                   >
-                    Start building free
+                    Make your first call
                     <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
                   </Button>
                   <Button

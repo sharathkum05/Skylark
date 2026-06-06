@@ -55,7 +55,7 @@ export function FooterSection() {
               </a>
 
               <p className="text-muted-foreground leading-relaxed mb-8 max-w-xs">
-                The platform for teams who ship. Build, deploy, and scale with unprecedented velocity.
+                Phone calls so you don&apos;t have to. Skylark calls businesses on your behalf and reports back.
               </p>
 
               {/* Social Links */}

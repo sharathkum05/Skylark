@@ -5,26 +5,26 @@ import { useEffect, useRef, useState } from "react";
 const features = [
   {
     number: "01",
-    title: "Instant Deployment",
-    description: "Push to production in seconds. Our edge network ensures your applications load instantly, anywhere in the world.",
+    title: "Waits on hold",
+    description: "No more elevator music. Skylark sits through hold queues and phone trees, pressing the right keys until it reaches a real person.",
     visual: "deploy",
   },
   {
     number: "02",
-    title: "AI-Native Workflows",
-    description: "Build intelligent applications with built-in AI capabilities. From inference to training, everything scales automatically.",
+    title: "Books anything",
+    description: "Restaurant tables, doctor, dentist and vision appointments, reservations — Skylark handles the back-and-forth and locks in a time.",
     visual: "ai",
   },
   {
     number: "03",
-    title: "Real-time Collaboration",
-    description: "Work together seamlessly. Live preview, instant feedback, and version control that actually makes sense.",
+    title: "Calls many at once",
+    description: "Need the soonest opening? Skylark rings up to ten places in parallel and brings back the best option it finds.",
     visual: "collab",
   },
   {
     number: "04",
-    title: "Enterprise Security",
-    description: "Bank-grade encryption, SOC 2 compliance, and granular access controls. Your data stays yours.",
+    title: "Reports back clearly",
+    description: "Every call ends with a clear result — confirmed details, a reference number, and notes on anything you should know.",
     visual: "security",
   },
 ];

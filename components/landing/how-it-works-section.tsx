@@ -5,38 +5,33 @@ import { useEffect, useRef, useState } from "react";
 const steps = [
   {
     number: "I",
-    title: "Connect your tools",
-    description: "Integrate with your existing stack in minutes. We support 200+ data sources out of the box.",
+    title: "Describe the task",
+    description: "Tell Skylark what you need and who to call — in plain English. No scripts, no forms.",
     code: `import { skylark } from '@skylark/core'
 
-skylark.connect({
-  source: 'your-database',
-  sync: true
+skylark.call({
+  to: "Luigi's Trattoria",
+  task: 'Table for 2, Fri 7pm'
 })`,
   },
   {
     number: "II",
-    title: "Build your workflow",
-    description: "Design powerful automations with our visual builder or write code directly.",
-    code: `skylark.workflow('process', {
-  trigger: 'event',
-  actions: [
-    'validate',
-    'transform', 
-    'deliver'
-  ]
-})`,
+    title: "Skylark dials out",
+    description: "It calls the business, navigates the menu, waits on hold, and talks to whoever answers.",
+    code: `// ringing… connected
+skylark.on('hold', () => wait())
+skylark.on('menu', press)
+skylark.on('human', greet)`,
   },
   {
     number: "III",
-    title: "Ship to production",
-    description: "Deploy globally with zero configuration. Your app goes live in under 30 seconds.",
-    code: `skylark.deploy({
-  target: 'production',
-  regions: 'auto'
-})
+    title: "Get the result",
+    description: "When the call wraps, you get a clear outcome — confirmed, with a reference number.",
+    code: `const result = await skylark.result()
 
-// Deployed to 12 regions`,
+// { success: true,
+//   summary: 'Booked Fri 7pm',
+//   confirmation: 'LG-4821' }`,
   },
 ];
 
@@ -151,7 +146,7 @@ export function HowItWorksSection() {
                   <div className="w-3 h-3 rounded-full bg-background/20" />
                   <div className="w-3 h-3 rounded-full bg-background/20" />
                 </div>
-                <span className="text-xs font-mono text-background/40">workflow.ts</span>
+                <span className="text-xs font-mono text-background/40">call.ts</span>
               </div>
 
               {/* Code content */}
