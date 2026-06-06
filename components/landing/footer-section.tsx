@@ -18,7 +18,6 @@ const footerLinks = {
 };
 
 const socialLinks = [
-  { name: "Twitter", href: "#" },
   { name: "GitHub", href: "https://github.com/sharathkum05" },
   { name: "LinkedIn", href: "https://www.linkedin.com/in/sharath0524/" },
 ];
