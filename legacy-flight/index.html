@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Relay — AI that makes your phone calls</title>
+    <meta
+      name="description"
+      content="Relay calls businesses on your behalf. Type a task, and an AI assistant makes the call, talks to whoever answers, and reports back."
+    />
+
+    <!-- Fonts: Bricolage Grotesque (display) + JetBrains Mono (transcript). -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Atmospheric layers -->
+    <div class="grain" aria-hidden="true"></div>
+    <div class="glow" aria-hidden="true"></div>
+
+    <main class="shell">
+      <!-- ============================ NAV ============================ -->
+      <nav class="nav">
+        <div class="brand">
+          <span class="brand-dot" aria-hidden="true"></span>
+          <span class="brand-name">RELAY</span>
+          <span class="data-badge" id="config-badge" title="Backend call config">CHECKING…</span>
+        </div>
+        <span class="nav-tag">AI&nbsp;phone&nbsp;assistant</span>
+      </nav>
+
+      <!-- ============================ HERO ============================ -->
+      <section class="hero">
+        <div class="hero-copy">
+          <span class="eyebrow">CALLS&nbsp;SO&nbsp;YOU&nbsp;DON'T&nbsp;HAVE&nbsp;TO</span>
+          <h1 class="headline">
+            Tell Relay what you need.<br />
+            It <span class="headline-flip">makes the call.</span>
+          </h1>
+          <p class="subhead">
+            Book a table, chase an appointment, check if something's in stock — type the
+            task and a real-sounding AI dials the business, talks to whoever answers, and
+            reports back. You never pick up the phone.
+          </p>
+
+          <dl class="stats" aria-label="How it works">
+            <div class="stat"><dt>1 · Describe</dt><dd>the task</dd></div>
+            <div class="stat"><dt>2 · Relay dials</dt><dd>the business</dd></div>
+            <div class="stat"><dt>3 · You get</dt><dd>the result</dd></div>
+          </dl>
+        </div>
+
+        <!-- ====================== TASK COMPOSER ====================== -->
+        <form class="composer" id="composer" autocomplete="off">
+          <div class="composer-head">
+            <span class="composer-title">NEW&nbsp;CALL</span>
+          </div>
+
+          <label class="field field-wide">
+            <span class="field-label">What should Relay get done?</span>
+            <textarea
+              id="f-task"
+              rows="2"
+              placeholder="e.g. Book a table for 2 this Friday at 7pm under the name Sharath."
+              required
+            ></textarea>
+          </label>
+
+          <div class="field-row">
+            <label class="field">
+              <span class="field-label">Business name</span>
+              <input id="f-biz-name" type="text" placeholder="Luigi's Trattoria" />
+            </label>
+            <label class="field">
+              <span class="field-label">Number to call <em>(your phone, for the demo)</em></span>
+              <input id="f-biz-number" type="tel" placeholder="+1 415 555 0123" required />
+            </label>
+          </div>
+
+          <div class="field-row">
+            <label class="field">
+              <span class="field-label">Your name</span>
+              <input id="f-user-name" type="text" placeholder="Sharath" />
+            </label>
+            <label class="field">
+              <span class="field-label">Callback number <em>(optional)</em></span>
+              <input id="f-user-callback" type="tel" placeholder="+1 415 555 0199" />
+            </label>
+          </div>
+
+          <label class="field field-wide">
+            <span class="field-label">Extra details Relay can share if asked <em>(optional)</em></span>
+            <input
+              id="f-details"
+              type="text"
+              placeholder="Window seat preferred; allergic to shellfish."
+            />
+          </label>
+
+          <button class="cta" id="call-btn" type="submit">
+            <span class="cta-glyph" aria-hidden="true">📞</span>
+            <span id="call-btn-label">Make the call</span>
+          </button>
+          <p class="composer-note" id="composer-note">
+            Relay will dial the number above and run the task live.
+          </p>
+        </form>
+      </section>
+
+      <!-- Inline error / info banner -->
+      <div class="banner" id="banner" hidden></div>
+
+      <!-- ===================== LIVE CALL + RESULT ==================== -->
+      <section class="console" id="live-console" aria-label="Live call" hidden>
+        <div class="console-head">
+          <div class="status" id="status">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span class="status-label" id="status-label">Queued</span>
+          </div>
+          <span class="console-title" id="live-task">—</span>
+          <span class="call-timer" id="call-timer">00:00</span>
+        </div>
+
+        <div class="console-body">
+          <div class="transcript" id="transcript" aria-live="polite">
+            <p class="transcript-empty" id="transcript-empty">
+              The conversation will appear here, line by line, as Relay talks.
+            </p>
+          </div>
+
+          <aside class="result-slot" id="result-slot" aria-live="polite">
+            <div class="result-placeholder" id="result-placeholder">
+              <span class="result-placeholder-icon" aria-hidden="true">✦</span>
+              <span>Relay's report lands here the moment the call wraps up.</span>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ========================= HISTORY ========================== -->
+      <section class="history" aria-label="Past tasks">
+        <div class="history-head">
+          <span class="history-title">TASK&nbsp;HISTORY</span>
+          <button class="history-refresh" id="history-refresh" type="button">↻ Refresh</button>
+        </div>
+        <ul class="history-list" id="history-list">
+          <li class="history-empty" id="history-empty">No calls yet. Your first task will show up here.</li>
+        </ul>
+      </section>
+
+      <footer class="foot">
+        <span>Relay · v0 demo</span>
+        <span class="foot-sep">/</span>
+        <span>Vapi · Deepgram nova-2 · Claude Sonnet 4.6 · ElevenLabs</span>
+        <span class="foot-sep">/</span>
+        <span>Outbound calls bill per minute — point it at your own number.</span>
+      </footer>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

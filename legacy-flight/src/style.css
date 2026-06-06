@@ -78,6 +78,12 @@ body {
   background: var(--amber); box-shadow: 0 0 12px 1px var(--amber);
 }
 .brand-name { font-weight: 700; }
+.data-badge {
+  font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.16em;
+  padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line);
+  color: var(--ink-faint); background: var(--bg-2);
+}
+.data-badge.is-live { color: var(--green); border-color: rgba(52,224,161,0.4); }
 
 .key-field {
   display: flex; align-items: center; gap: 9px;

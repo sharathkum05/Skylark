@@ -1,0 +1,24 @@
+{
+  "name": "skylark-voice-flight",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Skylark — a Vapi voice agent that books a flight in one short conversation.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "server": "node --env-file=.env server/index.mjs",
+    "provision:phone": "node scripts/provision-phone.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.2",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.2"
+  },
+  "dependencies": {
+    "@vapi-ai/web": "^2.3.8",
+    "cors": "^2.8.6",
+    "express": "^5.2.1"
+  }
+}

@@ -85,10 +85,22 @@ export const FIRST_MESSAGE =
   "Hi, this is Skylark. Where would you like to fly?";
 
 /* ------------------------------------------------------------------ *
+ * Real-time vs. mock data
+ * ------------------------------------------------------------------ *
+ * If VITE_SEARCH_FLIGHTS_URL points at the backend (`server/index.mjs`,
+ * exposed publicly), the agent gets a SERVER-SIDE `search_flights` tool and
+ * offers REAL Amadeus fares. With no URL set, it falls back to the fixed mock
+ * list above so the demo still runs offline.
+ */
+export const SEARCH_FLIGHTS_URL = (
+  import.meta.env.VITE_SEARCH_FLIGHTS_URL ?? ""
+).trim();
+
+/* ------------------------------------------------------------------ *
  * System prompt
  * ------------------------------------------------------------------ */
 
-export const SYSTEM_PROMPT = `You are Skylark, a warm, efficient voice agent that books flights over the phone.
+const PROMPT_HEAD = `You are Skylark, a warm, efficient voice agent that books flights over the phone.
 
 STYLE
 - This is a live phone call. Keep every turn to ONE or TWO short sentences.
@@ -99,19 +111,9 @@ WHAT TO COLLECT (one question per turn, in roughly this order)
 1. Origin city ("Where are you flying from?")
 2. Destination city
 3. Travel date
-4. Budget (optional — if they give one, prefer flights at or under it)
+4. Budget (optional — if they give one, prefer flights at or under it)`;
 
-AVAILABLE FLIGHTS (this is your ENTIRE inventory — never invent or imply others)
-${flightLines(MOCK_FLIGHTS)}
-
-OFFERING FLIGHTS
-- Once you know origin, destination, and date, offer the matching options from the
-  list above, briefly (airline, time, price, stops). If they gave a budget, lead with
-  options at or under it and mention if a pricier nonstop exists.
-- If asked for something you don't have (an airline, time, or price not in the list),
-  say you don't have that and offer the closest real option instead. NEVER make one up.
-
-BOOKING — THIS IS THE CRITICAL RULE
+const PROMPT_BOOKING_TAIL = `BOOKING — THIS IS THE CRITICAL RULE
 - Do NOT call the book_flight tool until the caller EXPLICITLY confirms the exact flight
   AND its price. A vague "sounds good" while still comparing is not confirmation.
 - Before booking, read back the choice once: airline, time, price, and route, then ask
@@ -121,8 +123,43 @@ BOOKING — THIS IS THE CRITICAL RULE
 HANDLING THE MESSY STUFF
 - If the caller changes their mind, just update the relevant detail and keep going.
 - If you didn't catch something, ask them to repeat it — don't guess.
-- If they ask for a city/route, assume the inventory above applies to it (it's a demo).
 - Default the seat to "economy" unless they ask otherwise.`;
+
+/** Real-time prompt: the agent MUST search and may only offer returned flights. */
+function realtimePrompt(today: string): string {
+  return `${PROMPT_HEAD}
+
+TODAY'S DATE is ${today}. Convert any spoken date ("next Friday", "the 12th") to an
+exact YYYY-MM-DD before searching.
+
+FINDING FLIGHTS — USE REAL DATA
+- Once you know origin, destination, and date, CALL the search_flights tool to get
+  live options. Pass budget too if the caller gave one.
+- Offer ONLY flights returned by search_flights, briefly (airline, departure time,
+  price, stops). If they gave a budget, lead with options at or under it.
+- NEVER invent or guess an airline, time, or price. If the tool returns nothing, say so
+  and suggest a different date — do not make anything up.
+
+${PROMPT_BOOKING_TAIL}`;
+}
+
+/** Mock prompt: fixed inventory, used when no search backend is configured. */
+function mockPrompt(): string {
+  return `${PROMPT_HEAD}
+
+AVAILABLE FLIGHTS (this is your ENTIRE inventory — never invent or imply others)
+${flightLines(MOCK_FLIGHTS)}
+
+OFFERING FLIGHTS
+- Once you know origin, destination, and date, offer the matching options from the
+  list above, briefly (airline, time, price, stops). If they gave a budget, lead with
+  options at or under it and mention if a pricier nonstop exists.
+- If asked for something you don't have, say so and offer the closest real option
+  instead. NEVER make one up.
+- If they ask for a city/route, assume the inventory above applies to it (it's a demo).
+
+${PROMPT_BOOKING_TAIL}`;
+}
 
 /* ------------------------------------------------------------------ *
  * Client-side tool: book_flight
@@ -171,6 +208,46 @@ export const bookFlightTool = {
 };
 
 /* ------------------------------------------------------------------ *
+ * Server-side tool: search_flights
+ * ------------------------------------------------------------------ */
+
+/**
+ * `search_flights` is a SERVER-SIDE tool: it has a `server.url`, so Vapi POSTs
+ * the call to our backend (`server/index.mjs`), which queries Amadeus and
+ * returns real fares. Those results flow BACK into the model's context — which
+ * is exactly why this can't be a client tool. Only added when a URL is set.
+ */
+function buildSearchFlightsTool(url: string) {
+  return {
+    type: "function" as const,
+    function: {
+      name: "search_flights",
+      description:
+        "Search for real, live flight options. Call this once you know origin, destination, and date. Returns the only flights you may offer.",
+      parameters: {
+        type: "object" as const,
+        properties: {
+          from: { type: "string", description: "Origin city or IATA code." },
+          to: { type: "string", description: "Destination city or IATA code." },
+          date: {
+            type: "string",
+            description: "Departure date as YYYY-MM-DD (convert spoken dates first).",
+          },
+          budget: {
+            type: "number",
+            description: "Optional max fare in USD, if the caller gave one.",
+          },
+          adults: { type: "number", description: "Number of passengers. Default 1." },
+        },
+        required: ["from", "to", "date"],
+      },
+    },
+    // Presence of server.url is what makes this a server-side tool.
+    server: { url },
+  };
+}
+
+/* ------------------------------------------------------------------ *
  * Assembled inline assistant config
  * ------------------------------------------------------------------ */
 
@@ -180,6 +257,15 @@ export const bookFlightTool = {
  * object here avoids fighting the SDK's union types while staying readable.
  */
 export function buildAssistant() {
+  const realtime = SEARCH_FLIGHTS_URL.length > 0;
+  const today = new Date().toISOString().slice(0, 10);
+
+  // Real-time mode adds the search tool; otherwise we use the fixed mock list.
+  const systemPrompt = realtime ? realtimePrompt(today) : mockPrompt();
+  const tools = realtime
+    ? [bookFlightTool, buildSearchFlightsTool(SEARCH_FLIGHTS_URL)]
+    : [bookFlightTool];
+
   return {
     name: "Skylark",
     firstMessage: FIRST_MESSAGE,
@@ -189,12 +275,15 @@ export function buildAssistant() {
       provider: MODEL_CONFIG.provider,
       model: MODEL_CONFIG.model,
       temperature: MODEL_CONFIG.temperature,
-      messages: [{ role: "system", content: SYSTEM_PROMPT }],
-      tools: [bookFlightTool],
+      messages: [{ role: "system", content: systemPrompt }],
+      tools,
     },
     voice: VOICE_CONFIG,
   };
 }
+
+/** Whether the app is configured for real-time search (used by the UI badge). */
+export const IS_REALTIME = SEARCH_FLIGHTS_URL.length > 0;
 
 /** Shape of the arguments the browser receives from a `book_flight` tool-call. */
 export interface BookFlightArgs {

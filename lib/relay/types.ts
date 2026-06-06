@@ -1,0 +1,53 @@
+/**
+ * lib/relay/types.ts — shapes shared across the Skylark call API + UI.
+ */
+
+/** A finalized line in the call transcript. */
+export interface TranscriptTurn {
+  /** "skylark" = our agent; "business" = whoever it called (you, in the demo). */
+  role: "skylark" | "business";
+  text: string;
+}
+
+/** The structured outcome the agent reports via the `report_result` tool. */
+export interface TaskResult {
+  /** true = done, false = couldn't, null = unknown (fell back to Vapi summary). */
+  success: boolean | null;
+  summary: string;
+  confirmation?: string;
+  details?: string;
+}
+
+/** Lifecycle of an outbound call, mirroring Vapi's call statuses. */
+export type TaskStatus =
+  | "queued"
+  | "ringing"
+  | "in-progress"
+  | "forwarding"
+  | "ended"
+  | "failed";
+
+/** What the UI POSTs to create a task. */
+export interface NewTaskInput {
+  task: string;
+  business: { name?: string; number: string };
+  user?: { name?: string; callbackNumber?: string };
+  details?: string;
+}
+
+/** One task = one outbound call the assistant makes for you. */
+export interface Task {
+  id: string;
+  createdAt: string;
+  task: string;
+  business: { name: string; number: string };
+  user: { name: string; callbackNumber: string };
+  details: string;
+  status: TaskStatus;
+  callId: string | null;
+  transcript: TranscriptTurn[];
+  result: TaskResult | null;
+  endedReason: string | null;
+  recordingUrl: string | null;
+  error: string | null;
+}

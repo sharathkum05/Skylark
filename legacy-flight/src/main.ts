@@ -16,7 +16,7 @@
 
 import Vapi from "@vapi-ai/web";
 import "./style.css";
-import { buildAssistant, type BookFlightArgs } from "./assistant";
+import { buildAssistant, IS_REALTIME, type BookFlightArgs } from "./assistant";
 
 /* ---------------------------- DOM refs ---------------------------- */
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
@@ -430,6 +430,13 @@ if (phoneNumber) {
   cta.href = `tel:${phoneNumber.replace(/[^\d+]/g, "")}`;
   $("phone-cta-number").textContent = phoneNumber;
   cta.hidden = false;
+}
+
+// Data-source badge: live (real Amadeus search) vs demo (fixed mock list).
+const dataBadge = $("data-badge");
+if (IS_REALTIME) {
+  dataBadge.textContent = "LIVE DATA";
+  dataBadge.classList.add("is-live");
 }
 
 refreshDial();

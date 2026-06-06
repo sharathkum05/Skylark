@@ -1,138 +1,65 @@
-# Skylark — book a flight by voice
+# Skylark — AI that makes your phone calls
 
-A one-page web demo where you tap a button, talk to an AI gate agent, and book a
-flight in a single short conversation. **The landing page _is_ the live demo.**
+Skylark is a Simple-AI-style assistant: you type a task ("book a table for 2 at
+7pm"), and an AI **dials the business, talks to whoever answers, and reports
+back**. You never pick up the phone.
 
-It uses [Vapi](https://vapi.ai)'s Web SDK to run the listen → think → speak loop
-in the browser with an **inline (ephemeral) assistant**, so there's no dashboard
-setup and no backend required for v0.
-
-- **Transcriber:** Deepgram `nova-2`
-- **Model:** OpenAI `gpt-4o` _(swappable to Claude in one place — see below)_
-- **Voice:** ElevenLabs
-- **Tool:** `book_flight` as a **client-side** tool → the browser renders a
-  boarding-pass ticket when the agent books.
-
-## Run it
-
-You only need a Vapi **public** key (browser-safe).
-
-```bash
-npm install
-npm run dev
-```
-
-Then open the local URL Vite prints, **paste your Vapi public key** into the
-field on the page, and press **Start call**. Allow microphone access when asked,
-and say where you'd like to fly.
-
-### Getting a key
-
-1. Go to **https://dashboard.vapi.ai → API Keys**.
-2. Copy the **Public Key** (not the private key).
-3. Either paste it into the page, **or** put it in a `.env` file:
-
-```bash
-cp .env.example .env
-# then edit .env:
-# VITE_VAPI_PUBLIC_KEY=pk_your_public_key
-```
-
-The page field takes precedence over the env var, so you can demo a different key
-without rebuilding.
-
-> Note: ElevenLabs voice and the OpenAI model are billed through your Vapi
-> account's provider config. The public key only authorizes starting web calls.
+Built on a Next.js landing page (rebranded from the Optimus v0 template) with a
+small call-orchestration backend in Next.js API routes, powered by
+[Vapi](https://vapi.ai) (telephony + STT/LLM/TTS), Deepgram, Claude, and ElevenLabs.
 
 ## How it works
 
-- **`src/assistant.ts`** — the agent's whole brain in one editable file: system
-  prompt, the fixed mock flight list, provider config, the `book_flight` tool
-  schema, and the assembled inline assistant. **Swap the model to Claude here** by
-  editing `MODEL_CONFIG` (e.g. `{ provider: "anthropic", model: "claude-sonnet-4-6" }`).
-- **`src/main.ts`** — Vapi wiring + UI: resolves the key, manages the call,
-  renders live (partial → final) transcripts, measures turn latency
-  (caller speech-end → agent speech-start), handles the `book_flight` tool-call by
-  rendering the ticket, and shows mic/connection errors in a banner.
-- **`src/style.css`** — the departure-board theme (amber on near-black, film
-  grain, split-flap accents; Bricolage Grotesque + JetBrains Mono).
-
-### The agent's rules
-
-Warm, one question at a time, 1–2 sentences per turn. Collects origin →
-destination → date → (optional) budget, then offers **only** from the fixed list:
-
 ```
-SkyHop  8:00 AM  $180  nonstop
-SkyHop  2:00 PM  $150  1-stop
-NightJet 9:00 PM $240  nonstop
+Browser ──POST /api/tasks──> Next.js ──Vapi REST /call──> dials the business
+                                 ▲                              │
+                                 └──── /api/vapi-webhook ◀──────┘
+            (live transcript, status, and report_result outcome stream back)
 ```
 
-It **never books** until you explicitly confirm the exact flight **and** price,
-and it **never invents** flights outside that list.
+- **`app/api/tasks`** — create a task and place the outbound call.
+- **`app/api/vapi-webhook`** — receives status / transcript / end-of-call / the
+  agent's `report_result` outcome and stores it.
+- **`lib/relay/assistant.ts`** — the agent's brain (prompt, model/voice, tools).
+- **`lib/relay/store.ts`** — task + history persistence (`data/tasks.json`).
 
-## Mock data, client vs. server tools
+## Setup
 
-`book_flight` is a **client-side** tool: it has no server URL, so Vapi emits a
-`tool-calls` message the browser handles (rendering the ticket). That's the right
-shape for a local UI action.
+1. **Install**
+   ```bash
+   pnpm install   # or npm install
+   ```
 
-A real **`search_flights`** (returning live fares the model reasons over) must be
-a **server-side** tool, because its results have to flow back into the model's
-context. That's intentionally **not built in v0** — there's a clear `TODO` in
-`src/assistant.ts` marking where it goes.
+2. **Add your Vapi private key** to `.env.local`:
+   ```
+   VAPI_PRIVATE_KEY=...    # dashboard.vapi.ai -> API Keys (the PRIVATE one)
+   ```
 
-## Let people call the agent from a real phone
+3. **Mint a number to call from**
+   ```bash
+   npm run provision:phone
+   ```
+   Paste the printed `VAPI_PHONE_NUMBER_ID=...` into `.env.local`.
 
-The page demo is an **in-browser** call. To let anyone **dial the agent from a real
-phone**, Vapi gives you a phone number and routes inbound calls to a *persistent*
-assistant (the web app uses an ephemeral one that only lives during a browser call).
+4. **Expose a public webhook** so Vapi can stream events back:
+   ```bash
+   ngrok http 3000
+   ```
+   Put the https URL in `.env.local` as `PUBLIC_URL` (no trailing slash).
 
-> 🔴 Rotate your **private** key first (dashboard.vapi.ai → API Keys). Phone setup
-> uses the private key, which must never be in the frontend.
+5. **Run**
+   ```bash
+   npm run dev
+   ```
 
-**Option A — dashboard (no code):** create an assistant from [src/assistant.ts](src/assistant.ts),
-buy a free number under **Phone Numbers**, and set its **Inbound → Assistant** to it.
+## Demo tip
 
-**Option B — script (in repo):**
+Point a task's "number to call" at **your own phone** and role-play the business
+— the AI dials you, runs the task, and you watch its report come back. No risk of
+spamming a real restaurant. Live calls bill per minute on your Vapi account.
 
-```bash
-export VAPI_PRIVATE_KEY=pk_your_NEW_private_key
-npm run provision:phone     # creates assistant + buys a number + links them
-```
+## Status
 
-It prints the number people can call. Then add it to `.env` so the page shows a
-**"Call from your phone"** button:
-
-```bash
-VITE_VAPI_PHONE_NUMBER=+14155550123
-```
-
-> Telephony bills per minute on your Vapi account; the Vapi number itself is free.
-
-## Evals
-
-See [`evals/`](evals/) — ~10 scripted scenarios and a scoring rubric (task
-completed, **confirmed-before-booking** as the critical gate, turn latency < 2s,
-no hallucinated flights, graceful handling of changes/interruptions/invalid
-input). These are run against the agent (manually or via Vapi Simulations) and
-their aggregates feed the landing-page stats.
-
-## Decisions / defaults (v0)
-
-- **Vanilla TS + Vite** (no framework) — keeps it a tiny static, deployable
-  frontend.
-- **Public key from page field _or_ `VITE_VAPI_PUBLIC_KEY`** — field wins; nothing
-  hardcoded.
-- **ElevenLabs voice id** defaults to `burt`; change it in `VOICE_CONFIG`.
-- **Hero stats are placeholders** plus a **live** median turn-latency that updates
-  during a call; the rest get wired to eval `results.json` later.
-- **Seat** defaults to `economy` unless the caller asks otherwise.
-- No real tickets are issued — the inventory is mock.
-
-## Build
-
-```bash
-npm run build    # type-checks then builds to dist/
-npm run preview  # serve the production build
-```
+- ✅ Backend: outbound calls, webhook, structured result, history store.
+- 🚧 Interactive call console UI (task composer + live transcript) — next up.
+- The original flight-booking app is archived under `legacy-flight/`.
