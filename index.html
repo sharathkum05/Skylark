@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Skylark — book a flight by voice</title>
+    <meta
+      name="description"
+      content="Skylark is a voice agent that books a flight in one short conversation. Tap to call."
+    />
+
+    <!-- Fonts: Bricolage Grotesque (display) + JetBrains Mono (board/transcript). -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Atmospheric layers -->
+    <div class="grain" aria-hidden="true"></div>
+    <div class="glow" aria-hidden="true"></div>
+
+    <main class="shell">
+      <!-- ============================ NAV ============================ -->
+      <nav class="nav">
+        <div class="brand">
+          <span class="brand-dot" aria-hidden="true"></span>
+          <span class="brand-name">SKYLARK</span>
+        </div>
+        <label class="key-field" title="Your Vapi PUBLIC key (overrides the .env value)">
+          <span class="key-label">KEY</span>
+          <input
+            id="key-input"
+            type="password"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="vapi public key"
+          />
+        </label>
+      </nav>
+
+      <!-- ============================ HERO ============================ -->
+      <section class="hero">
+        <div class="hero-copy">
+          <span class="eyebrow">VOICE&nbsp;TERMINAL&nbsp;·&nbsp;LIVE&nbsp;DEMO</span>
+          <h1 class="headline">
+            Call Skylark.<br />
+            Book a flight by <span class="headline-flip">talking.</span>
+          </h1>
+          <p class="subhead">
+            Tap the dial pad, speak naturally, and an AI gate agent finds your
+            flight and confirms the ticket — in one short call. No forms, no menus.
+          </p>
+
+          <dl class="stats" aria-label="Agent performance">
+            <div class="stat">
+              <dt>Task completion</dt>
+              <dd id="stat-completion">96%</dd>
+            </div>
+            <div class="stat">
+              <dt>Median turn latency</dt>
+              <dd id="stat-latency">1.4<span class="unit">s</span></dd>
+            </div>
+            <div class="stat">
+              <dt>Unconfirmed bookings</dt>
+              <dd id="stat-unconfirmed">0</dd>
+            </div>
+          </dl>
+
+          <div class="hero-hint">
+            <span class="kbd">▲</span> Dial in on the keypad, then press
+            <span class="hint-call">Call</span>. Allow your mic when asked.
+          </div>
+        </div>
+
+        <!-- ====================== THE PHONE DEVICE ===================== -->
+        <div class="device-wrap">
+          <div class="device" id="device">
+            <!-- screen -->
+            <div class="screen">
+              <div class="screen-top">
+                <div class="status" id="status">
+                  <span class="status-dot" id="status-dot" aria-hidden="true"></span>
+                  <span class="status-label" id="status-label">Ready</span>
+                </div>
+                <span class="call-timer" id="call-timer">00:00</span>
+              </div>
+
+              <div class="dial-display" id="dial-display">1‑800‑SKYLARK</div>
+
+              <!-- live waveform (driven by volume-level) -->
+              <div class="wave" id="wave" aria-hidden="true"></div>
+            </div>
+
+            <!-- keypad -->
+            <div class="dialpad" id="dialpad">
+              <button class="key" data-key="1" type="button"><b>1</b><i>&nbsp;</i></button>
+              <button class="key" data-key="2" type="button"><b>2</b><i>ABC</i></button>
+              <button class="key" data-key="3" type="button"><b>3</b><i>DEF</i></button>
+              <button class="key" data-key="4" type="button"><b>4</b><i>GHI</i></button>
+              <button class="key" data-key="5" type="button"><b>5</b><i>JKL</i></button>
+              <button class="key" data-key="6" type="button"><b>6</b><i>MNO</i></button>
+              <button class="key" data-key="7" type="button"><b>7</b><i>PQRS</i></button>
+              <button class="key" data-key="8" type="button"><b>8</b><i>TUV</i></button>
+              <button class="key" data-key="9" type="button"><b>9</b><i>WXYZ</i></button>
+              <button class="key" data-key="*" type="button"><b>*</b><i>&nbsp;</i></button>
+              <button class="key" data-key="0" type="button"><b>0</b><i>+</i></button>
+              <button class="key key-back" data-key="back" type="button" aria-label="Delete"><b>⌫</b><i>&nbsp;</i></button>
+            </div>
+
+            <!-- call row -->
+            <div class="call-row">
+              <button id="mute-btn" class="circle circle-ghost" type="button" disabled aria-label="Mute">
+                <span class="mute-glyph">🎙</span>
+              </button>
+              <button id="call-btn" class="circle circle-call" type="button" aria-label="Call">
+                <span class="call-glyph" id="call-glyph">📞</span>
+              </button>
+              <div class="circle-spacer" aria-hidden="true"></div>
+            </div>
+            <div class="call-caption" id="call-btn-label">Call</div>
+          </div>
+          <div class="device-shadow" aria-hidden="true"></div>
+        </div>
+      </section>
+
+      <!-- Inline error / permission banner -->
+      <div class="banner" id="banner" hidden></div>
+
+      <!-- ===================== TRANSCRIPT + TICKET ==================== -->
+      <section class="console" aria-label="Call console">
+        <div class="console-head">
+          <span class="console-title">LIVE&nbsp;TRANSCRIPT</span>
+          <div class="latency" title="Last turn: your speech end → agent reply start">
+            <span class="latency-label">TURN</span>
+            <span class="latency-value" id="latency-value">—</span>
+          </div>
+        </div>
+
+        <div class="console-body">
+          <div class="transcript" id="transcript" aria-live="polite">
+            <p class="transcript-empty" id="transcript-empty">
+              The conversation appears here in real time. Press Call and say where
+              you'd like to fly.
+            </p>
+          </div>
+
+          <aside class="ticket-slot" id="ticket-slot" aria-live="polite">
+            <div class="ticket-placeholder" id="ticket-placeholder">
+              <span class="ticket-placeholder-icon" aria-hidden="true">✦</span>
+              <span>Your boarding pass renders here the moment you confirm a flight.</span>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <footer class="foot">
+        <span>Skylark · v0 demo</span>
+        <span class="foot-sep">/</span>
+        <span>Vapi · Deepgram nova-2 · GPT-4o · ElevenLabs</span>
+        <span class="foot-sep">/</span>
+        <span>Mock inventory — no real tickets are issued.</span>
+      </footer>
+    </main>
+
+    <!-- hidden meter bars reused by the waveform builder -->
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

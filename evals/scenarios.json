@@ -1,0 +1,221 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "name": "Skylark booking agent — eval suite",
+  "version": "0.1.0",
+  "description": "Scripted scenarios for evaluating the Skylark voice booking agent. Run manually (talk through each script) or via Vapi Simulations. Aggregate scores feed the landing-page stats row.",
+  "inventory": [
+    { "airline": "SkyHop", "departure": "8:00 AM", "price": 180, "stops": "nonstop" },
+    { "airline": "SkyHop", "departure": "2:00 PM", "price": 150, "stops": "1-stop" },
+    { "airline": "NightJet", "departure": "9:00 PM", "price": 240, "stops": "nonstop" }
+  ],
+  "rubric": {
+    "scale": "Each criterion scored pass (1) / fail (0) per scenario unless noted. Suite score = mean of per-scenario weighted scores.",
+    "criteria": [
+      {
+        "id": "task_completed",
+        "label": "Task completed",
+        "weight": 2,
+        "description": "Agent collected origin, destination, date (and budget if offered) and reached a booked or correctly-declined end state.",
+        "feeds_stat": "task_completion_pct"
+      },
+      {
+        "id": "confirmed_before_booking",
+        "label": "Confirmed before booking",
+        "weight": 3,
+        "critical": true,
+        "description": "CRITICAL. book_flight was called ONLY after the caller explicitly confirmed the exact flight AND price. Any booking without explicit confirmation = automatic scenario fail.",
+        "feeds_stat": "unconfirmed_bookings"
+      },
+      {
+        "id": "turn_latency",
+        "label": "Turn latency < 2s",
+        "weight": 1,
+        "description": "Median time from caller speech-end to agent speech-start is under 2 seconds.",
+        "feeds_stat": "median_turn_latency_s"
+      },
+      {
+        "id": "no_hallucinated_flights",
+        "label": "No hallucinated flights",
+        "weight": 2,
+        "description": "Agent only offered flights from the fixed inventory; never invented airlines, times, or prices."
+      },
+      {
+        "id": "graceful_handling",
+        "label": "Graceful handling",
+        "weight": 1,
+        "description": "Handled changes of mind, interruptions, and invalid/unclear input without breaking or guessing."
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "id": "happy_path_nonstop",
+      "title": "Straightforward booking, cheapest nonstop",
+      "user_goal": "Book the 8am SkyHop nonstop.",
+      "script": [
+        "I want to fly from Boston to Chicago.",
+        "Next Friday.",
+        "What have you got?",
+        "The 8am nonstop sounds good.",
+        "Yes, book it."
+      ],
+      "expect": {
+        "books": true,
+        "booked_flight": { "airline": "SkyHop", "price": 180 },
+        "must_confirm_before_booking": true
+      },
+      "checks": ["task_completed", "confirmed_before_booking", "no_hallucinated_flights", "turn_latency"]
+    },
+    {
+      "id": "budget_constraint",
+      "title": "Budget filters to the cheaper 1-stop",
+      "user_goal": "Stay under $160; accept the 2pm 1-stop.",
+      "script": [
+        "Seattle to Denver please.",
+        "The 12th.",
+        "My budget is 160 dollars.",
+        "Okay the 2pm one works.",
+        "Yes please book that."
+      ],
+      "expect": {
+        "books": true,
+        "booked_flight": { "airline": "SkyHop", "price": 150 },
+        "agent_should_lead_with_under_budget": true
+      },
+      "checks": ["task_completed", "confirmed_before_booking", "no_hallucinated_flights"]
+    },
+    {
+      "id": "no_premature_booking",
+      "title": "Soft 'sounds good' is NOT confirmation",
+      "user_goal": "Verify the agent does not book on a vague comment.",
+      "script": [
+        "Austin to Miami.",
+        "Tomorrow.",
+        "Hmm the night flight sounds good I guess... actually what's the cheapest?",
+        "Let me think about it."
+      ],
+      "expect": {
+        "books": false,
+        "reason": "Caller never explicitly confirmed; agent must NOT call book_flight."
+      },
+      "checks": ["confirmed_before_booking", "graceful_handling"]
+    },
+    {
+      "id": "change_of_mind",
+      "title": "Caller switches flight mid-conversation",
+      "user_goal": "Start toward the 9pm, then switch to the 8am and book.",
+      "script": [
+        "Fly me from Dallas to Atlanta.",
+        "Saturday.",
+        "The 9pm NightJet.",
+        "Actually no, give me the 8am instead.",
+        "Yes, confirm the 8am SkyHop at 180."
+      ],
+      "expect": {
+        "books": true,
+        "booked_flight": { "airline": "SkyHop", "price": 180 }
+      },
+      "checks": ["task_completed", "confirmed_before_booking", "graceful_handling"]
+    },
+    {
+      "id": "request_unavailable_option",
+      "title": "Asks for a flight that doesn't exist",
+      "user_goal": "Request a 6am Delta flight; agent must decline and offer real options.",
+      "script": [
+        "Phoenix to Portland.",
+        "The 3rd.",
+        "Do you have a 6am Delta flight for 90 dollars?",
+        "Okay then the cheapest you have.",
+        "Yes book it."
+      ],
+      "expect": {
+        "books": true,
+        "booked_flight": { "airline": "SkyHop", "price": 150 },
+        "agent_must_decline_fake": true
+      },
+      "checks": ["no_hallucinated_flights", "confirmed_before_booking", "graceful_handling"]
+    },
+    {
+      "id": "one_question_at_a_time",
+      "title": "Dumps all info at once",
+      "user_goal": "Caller gives everything in one breath; agent should not re-ask answered slots.",
+      "script": [
+        "I need to go from New York to LA on the 9th, budget around 200, what do you have?",
+        "The 8am nonstop.",
+        "Yes, book it."
+      ],
+      "expect": {
+        "books": true,
+        "booked_flight": { "airline": "SkyHop", "price": 180 },
+        "agent_should_not_reask_known_slots": true
+      },
+      "checks": ["task_completed", "confirmed_before_booking", "no_hallucinated_flights"]
+    },
+    {
+      "id": "interruption_barge_in",
+      "title": "Caller interrupts the agent mid-sentence",
+      "user_goal": "Barge in while options are being read; agent recovers.",
+      "script": [
+        "Chicago to Boston.",
+        "Friday.",
+        "[interrupt as agent lists options] —just the nonstop morning one.",
+        "Yes that's the one, book it."
+      ],
+      "expect": {
+        "books": true,
+        "booked_flight": { "airline": "SkyHop", "price": 180 }
+      },
+      "checks": ["graceful_handling", "confirmed_before_booking", "turn_latency"]
+    },
+    {
+      "id": "invalid_input",
+      "title": "Unintelligible / nonsensical date",
+      "user_goal": "Agent asks to clarify rather than guessing.",
+      "script": [
+        "Houston to Vegas.",
+        "On the umpteenth of Smarch.",
+        "Sorry — next Monday.",
+        "The 2pm one.",
+        "Yes, book it."
+      ],
+      "expect": {
+        "books": true,
+        "agent_must_ask_to_clarify_date": true,
+        "booked_flight": { "airline": "SkyHop", "price": 150 }
+      },
+      "checks": ["graceful_handling", "confirmed_before_booking", "task_completed"]
+    },
+    {
+      "id": "price_readback_required",
+      "title": "Confirmation must include the price",
+      "user_goal": "Ensure the agent reads back airline, time, AND price before booking.",
+      "script": [
+        "San Diego to Sacramento.",
+        "The 20th.",
+        "The night flight.",
+        "Yes, go ahead."
+      ],
+      "expect": {
+        "books": true,
+        "booked_flight": { "airline": "NightJet", "price": 240 },
+        "agent_must_read_back_price": true
+      },
+      "checks": ["confirmed_before_booking", "no_hallucinated_flights", "task_completed"]
+    },
+    {
+      "id": "abandon_no_booking",
+      "title": "Caller hangs up before deciding",
+      "user_goal": "No booking should occur; counts as graceful, not a completed task.",
+      "script": [
+        "Newark to Tampa.",
+        "Sunday.",
+        "Hmm, none of these work for me. Never mind, thanks."
+      ],
+      "expect": {
+        "books": false,
+        "reason": "Caller declined all options; agent ends politely without booking."
+      },
+      "checks": ["confirmed_before_booking", "graceful_handling"]
+    }
+  ]
+}
