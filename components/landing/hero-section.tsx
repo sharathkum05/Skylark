@@ -2,10 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Phone } from "lucide-react";
 import { AnimatedSphere } from "./animated-sphere";
 
 const words = ["calls", "books", "waits", "confirms"];
+
+// Real Vapi number people can call to try Skylark live. Set after provisioning:
+//   NEXT_PUBLIC_SKYLARK_DEMO_NUMBER="+1 (856) 348-5830"
+const DEMO_NUMBER = process.env.NEXT_PUBLIC_SKYLARK_DEMO_NUMBER || "+1 (000) 000-0000";
+const DEMO_TEL = DEMO_NUMBER.replace(/[^\d+]/g, "");
 
 export function HeroSection() {
   const [isVisible, setIsVisible] = useState(false);
@@ -114,8 +119,8 @@ export function HeroSection() {
           </p>
           
           {/* CTAs */}
-          <div 
-            className={`flex flex-col sm:flex-row items-start gap-4 transition-all duration-700 delay-300 ${
+          <div
+            className={`flex flex-col items-start gap-6 transition-all duration-700 delay-300 ${
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
           >
@@ -126,6 +131,20 @@ export function HeroSection() {
               Watch demo
               <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
             </Button>
+
+            {/* Call to try Skylark's AI agent live */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <span className="text-sm text-muted-foreground">
+                Call to try Skylark&apos;s AI agent live:
+              </span>
+              <a
+                href={`tel:${DEMO_TEL}`}
+                className="inline-flex items-center gap-2 px-4 h-10 rounded-full border border-foreground/20 hover:bg-foreground/5 transition-colors font-mono text-sm"
+              >
+                <Phone className="w-4 h-4" />
+                {DEMO_NUMBER}
+              </a>
+            </div>
           </div>
         </div>
         

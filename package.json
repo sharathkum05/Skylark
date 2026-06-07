@@ -7,7 +7,8 @@
     "dev": "next dev",
     "lint": "eslint .",
     "start": "next start",
-    "provision:phone": "node --env-file=.env.local scripts/provision-phone.mjs"
+    "provision:phone": "node --env-file=.env.local scripts/provision-phone.mjs",
+    "provision:demo": "node --env-file=.env.local scripts/provision-demo-line.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
