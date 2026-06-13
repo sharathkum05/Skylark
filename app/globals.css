@@ -153,6 +153,23 @@
     filter: blur(40px);
     transform: translateY(100%);
   }
+
+  .animate-word-in {
+    animation: word-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    opacity: 0;
+    transform: translateY(0.15em);
+  }
+
+  @keyframes word-in {
+    0% {
+      opacity: 0;
+      transform: translateY(0.15em);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
   
   @keyframes char-in {
     0% {

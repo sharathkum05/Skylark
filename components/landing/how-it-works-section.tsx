@@ -5,33 +5,35 @@ import { useEffect, useRef, useState } from "react";
 const steps = [
   {
     number: "I",
-    title: "Describe the task",
-    description: "Tell Skylark what you need and who to call — in plain English. No scripts, no forms.",
-    code: `import { skylark } from '@skylark/core'
-
-skylark.call({
-  to: "Luigi's Trattoria",
-  task: 'Table for 2, Fri 7pm'
+    title: "Call comes in",
+    description: "A caller dials your line — or your agent places an outbound call. The agent greets, identifies itself, and asks for the details it needs.",
+    code: `// inbound: caller dials your line
+skylark.agent.on('call', (call) => {
+  call.greet("Hi, I'm Skylark.")
+  call.collect({ name, phone, intent })
 })`,
   },
   {
     number: "II",
-    title: "Skylark dials out",
-    description: "It calls the business, navigates the menu, waits on hold, and talks to whoever answers.",
-    code: `// ringing… connected
-skylark.on('hold', () => wait())
-skylark.on('menu', press)
-skylark.on('human', greet)`,
+    title: "Agent collects info",
+    description: "It runs the conversation — checking availability, confirming details, handling follow-up questions — like a trained operator, not a script.",
+    code: `const slots = await skylark.tools
+  .checkAvailability({ date: 'Sat 7pm' })
+
+await skylark.tools.confirm({
+  slot: slots[0],
+  party: 4,
+})`,
   },
   {
     number: "III",
-    title: "Get the result",
-    description: "When the call wraps, you get a clear outcome — confirmed, with a reference number.",
-    code: `const result = await skylark.result()
+    title: "Systems update",
+    description: "The slot books to your calendar, the record syncs to your CRM, and your team gets a transcript — no double-booking, no manual entry.",
+    code: `await skylark.tools.bookSlot(slots[0])
+await skylark.crm.upsert({ name, phone })
 
-// { success: true,
-//   summary: 'Booked Fri 7pm',
-//   confirmation: 'LG-4821' }`,
+// calendar: Sat 7:00 PM — locked
+// crm: contact updated, call logged`,
   },
 ];
 

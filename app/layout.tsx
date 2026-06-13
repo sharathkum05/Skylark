@@ -21,8 +21,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Skylark — AI that makes your calls',
-  description: "Skylark makes phone calls so you don't have to. Describe a task and an AI dials the business, waits on hold, navigates phone trees, and reports back.",
+  title: 'Skylark — Voice agents for inbound & outbound calls',
+  description: 'Skylark deploys voice agents that handle inbound and outbound calls, collect information, and update your calendar and CRM — no double-booking. Runs 24/7.',
   generator: 'v0.app',
 }
 

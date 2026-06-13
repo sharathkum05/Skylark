@@ -5,7 +5,10 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Phone } from "lucide-react";
 import { AnimatedSphere } from "./animated-sphere";
 
-const words = ["calls", "books", "waits", "confirms"];
+const words = ["answers", "books", "syncs", "runs 24/7"];
+
+// Keep the rotating line from jumping as word length changes.
+const longestWordChars = Math.max(...words.map((w) => w.length));
 
 // Real Vapi number people can call to try Skylark live. Set after provisioning:
 //   NEXT_PUBLIC_SKYLARK_DEMO_NUMBER="+1 (856) 348-5830"
@@ -25,7 +28,7 @@ export function HeroSection() {
       setWordIndex((prev) => (prev + 1) % words.length);
     }, 2500);
     return () => clearInterval(interval);
-  }, []);
+  }, [words.length]);
 
   return (
     <section className="relative min-h-screen flex flex-col justify-center overflow-hidden">
@@ -69,7 +72,7 @@ export function HeroSection() {
         >
           <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground">
             <span className="w-8 h-px bg-foreground/30" />
-            Phone calls so you don&apos;t have to
+            Inbound &amp; outbound voice agents
           </span>
         </div>
         
@@ -80,27 +83,19 @@ export function HeroSection() {
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
             }`}
           >
-            <span className="block">The assistant</span>
+            <span className="block">Voice agents</span>
             <span className="block">
               that{" "}
-              <span className="relative inline-block">
-                <span 
-                  key={wordIndex}
-                  className="inline-flex"
+              <span
+                className="inline-block align-bottom text-left"
+                style={{ minWidth: `${longestWordChars}ch` }}
+              >
+                <span
+                  key={words[wordIndex]}
+                  className="inline-block animate-word-in"
                 >
-                  {words[wordIndex].split("").map((char, i) => (
-                    <span
-                      key={`${wordIndex}-${i}`}
-                      className="inline-block animate-char-in"
-                      style={{
-                        animationDelay: `${i * 50}ms`,
-                      }}
-                    >
-                      {char}
-                    </span>
-                  ))}
+                  {words[wordIndex]}
                 </span>
-                <span className="absolute -bottom-2 left-0 right-0 h-3 bg-foreground/10" />
               </span>
             </span>
           </h1>
@@ -113,9 +108,9 @@ export function HeroSection() {
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
           >
-            Tell Skylark what you need. It dials the business, waits on hold,
-            navigates phone trees, and talks to whoever answers — then reports
-            back, so you never have to pick up the phone.
+            Skylark deploys voice agents that handle inbound and outbound calls,
+            collect caller information, and write directly to your calendar and
+            CRM — no double-booking, no manual entry. Runs 24/7.
           </p>
           
           {/* CTAs */}
@@ -135,7 +130,7 @@ export function HeroSection() {
             {/* Call to try Skylark's AI agent live */}
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
               <span className="text-sm text-muted-foreground">
-                Call to try Skylark&apos;s AI agent live:
+                Call the inbound agent live:
               </span>
               <a
                 href={`tel:${DEMO_TEL}`}

@@ -52,14 +52,15 @@ export function CtaSection() {
               {/* Left content */}
               <div className="flex-1">
                 <h2 className="text-4xl lg:text-7xl font-display tracking-tight mb-8 leading-[0.95]">
-                  Ready to skip
+                  Deploy your first
                   <br />
-                  the phone?
+                  voice agent.
                 </h2>
 
                 <p className="text-xl text-muted-foreground mb-12 leading-relaxed max-w-xl">
-                  Join thousands of people who let Skylark make the call.
-                  Start free, no credit card.
+                  Inbound and outbound agents that book to your calendar,
+                  sync to your CRM, and run 24/7. Call the demo line or
+                  watch it work.
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-start gap-4">
@@ -73,7 +74,7 @@ export function CtaSection() {
                 </div>
 
                 <p className="text-sm text-muted-foreground mt-8 font-mono">
-                  A look at how Skylark works
+                  See the inbound agent book a slot live
                 </p>
               </div>
 

@@ -42,7 +42,8 @@ export function FooterSection() {
               </a>
 
               <p className="text-muted-foreground leading-relaxed mb-8 max-w-xs">
-                Phone calls so you don&apos;t have to. Skylark calls businesses on your behalf and reports back.
+                Voice agents that handle inbound and outbound calls, collect
+                information, and update your internal systems.
               </p>
 
               {/* Social Links */}

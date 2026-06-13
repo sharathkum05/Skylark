@@ -5,26 +5,26 @@ import { useEffect, useRef, useState } from "react";
 const features = [
   {
     number: "01",
-    title: "Waits on hold",
-    description: "No more elevator music. Skylark sits through hold queues and phone trees, pressing the right keys until it reaches a real person.",
+    title: "Books to your calendar",
+    description: "The agent checks live availability, collects caller details, and locks the slot — so the next caller can't book the same time.",
     visual: "deploy",
   },
   {
     number: "02",
-    title: "Books anything",
-    description: "Restaurant tables, doctor, dentist and vision appointments, reservations — Skylark handles the back-and-forth and locks in a time.",
+    title: "Updates your CRM",
+    description: "Every call writes back to your internal systems — contact records, notes, and outcomes land where your team already works.",
     visual: "ai",
   },
   {
     number: "03",
-    title: "Calls many at once",
-    description: "Need the soonest opening? Skylark rings up to ten places in parallel and brings back the best option it finds.",
+    title: "Inbound & outbound",
+    description: "One agent stack handles calls coming in and going out — intake, follow-ups, confirmations, and outbound outreach on the same rails.",
     visual: "collab",
   },
   {
     number: "04",
-    title: "Reports back clearly",
-    description: "Every call ends with a clear result — confirmed details, a reference number, and notes on anything you should know.",
+    title: "Runs 24/7",
+    description: "Agents answer on the first ring, day or night — with full transcripts and audit logs so you can review every conversation.",
     visual: "security",
   },
 ];

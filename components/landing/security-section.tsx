@@ -7,22 +7,22 @@ const securityFeatures = [
   {
     icon: Shield,
     title: "Always identifies as AI",
-    description: "Skylark says it's an assistant calling on your behalf — no impersonation, ever.",
+    description: "Every agent discloses it's automated on the first turn — no impersonation, ever.",
   },
   {
     icon: Lock,
-    title: "Your data, only as needed",
-    description: "Personal details are shared only when the task requires them, and never sold.",
+    title: "Data stays in your systems",
+    description: "Caller information writes only to your calendar and CRM — never sold, never shared.",
   },
   {
     icon: Eye,
     title: "Full transcripts",
-    description: "Every call is transcribed and saved, so you can review exactly what was said.",
+    description: "Every inbound and outbound call is transcribed and logged for review and audit.",
   },
   {
     icon: FileCheck,
-    title: "You stay in control",
-    description: "Set what Skylark can and can't say — and it checks back with you when unsure.",
+    title: "Human handoff when needed",
+    description: "Agents escalate to your team when a call is sensitive, uncertain, or out of scope.",
   },
 ];
 
@@ -64,9 +64,9 @@ export function SecuritySection() {
               non-negotiable.
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed mb-12">
-              Skylark handles your calls with care. Your details are used only for
-              the task, never shared, and every call is logged so you can see
-              exactly what happened.
+              Voice agents handle sensitive caller data every day. Skylark keeps
+              it in your systems, logs every conversation, and hands off to
+              humans when the call needs a real person.
             </p>
 
             {/* Certifications */}
