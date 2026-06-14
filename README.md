@@ -14,7 +14,7 @@
 
 <br />
 
-[**Watch demo**](#demo) · [**Quick start**](#quick-start) · [**Dashboard**](#owner-dashboard) · [**Architecture**](#architecture)
+[**Watch demo**](https://www.youtube.com/watch?v=rBnf0hujgS0) · [**Quick start**](#quick-start) · [**Dashboard**](#owner-dashboard) · [**Architecture**](#architecture)
 
 </div>
 
@@ -55,13 +55,11 @@ Callers speak naturally. The agent checks availability, collects details, confir
 
 ## Demo
 
-<!-- Replace VIDEO_ID with your YouTube video ID -->
-
 <div align="center">
 
-[![Watch the Skylark demo](https://img.youtube.com/vi/VIDEO_ID/maxresdefault.jpg)](https://youtu.be/VIDEO_ID)
+[![Watch the Skylark demo](https://img.youtube.com/vi/rBnf0hujgS0/maxresdefault.jpg)](https://www.youtube.com/watch?v=rBnf0hujgS0)
 
-**[▶ Watch full demo on YouTube](https://youtu.be/VIDEO_ID)**
+**[▶ Watch full demo on YouTube](https://www.youtube.com/watch?v=rBnf0hujgS0)**
 
 </div>
 

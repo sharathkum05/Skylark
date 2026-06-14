@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Phone } from "lucide-react";
 import { AnimatedSphere } from "./animated-sphere";
+import { DEMO_VIDEO_URL } from "@/lib/demo-video";
 
 const words = ["answers", "books", "syncs", "runs 24/7"];
 
@@ -120,11 +121,14 @@ export function HeroSection() {
             }`}
           >
             <Button
+              asChild
               size="lg"
               className="bg-foreground hover:bg-foreground/90 text-background px-8 h-14 text-base rounded-full group"
             >
-              Watch demo
-              <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+              <a href={DEMO_VIDEO_URL} target="_blank" rel="noopener noreferrer">
+                Watch demo
+                <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+              </a>
             </Button>
 
             {/* Call to try Skylark's AI agent live */}

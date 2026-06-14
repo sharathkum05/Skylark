@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
+import { DEMO_VIDEO_URL } from "@/lib/demo-video";
 
 const navLinks = [
   { name: "Features", href: "#features" },
@@ -66,10 +67,13 @@ export function Navigation() {
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center">
             <Button
+              asChild
               size="sm"
               className={`bg-foreground hover:bg-foreground/90 text-background rounded-full transition-all duration-500 ${isScrolled ? "px-4 h-8 text-xs" : "px-6"}`}
             >
-              Watch demo
+              <a href={DEMO_VIDEO_URL} target="_blank" rel="noopener noreferrer">
+                Watch demo
+              </a>
             </Button>
           </div>
 
@@ -126,11 +130,18 @@ export function Navigation() {
           }`}
           style={{ transitionDelay: isMobileMenuOpen ? "300ms" : "0ms" }}
           >
-            <Button 
+            <Button
+              asChild
               className="w-full bg-foreground text-background rounded-full h-14 text-base"
-              onClick={() => setIsMobileMenuOpen(false)}
             >
-              Watch demo
+              <a
+                href={DEMO_VIDEO_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Watch demo
+              </a>
             </Button>
           </div>
         </div>
