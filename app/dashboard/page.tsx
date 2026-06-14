@@ -64,21 +64,14 @@ function formatUpdated(iso: string): string {
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
-  const [pulse, setPulse] = useState(false);
 
   useEffect(() => {
     let active = true;
-    let prevBooked = -1;
 
     async function load() {
       const res = await fetch("/api/dashboard");
       if (!res.ok || !active) return;
       const json = (await res.json()) as DashboardData;
-      if (prevBooked >= 0 && json.board.stats.booked > prevBooked) {
-        setPulse(true);
-        setTimeout(() => setPulse(false), 1200);
-      }
-      prevBooked = json.board.stats.booked;
       setData(json);
     }
 
@@ -125,39 +118,17 @@ export default function DashboardPage() {
         </header>
 
         <div className="mx-auto max-w-[1400px] px-6 py-16 lg:px-12 lg:py-24">
-          <header className="mb-12 flex flex-col gap-6 lg:mb-16 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <span className="mb-6 inline-flex items-center gap-3 font-mono text-sm text-muted-foreground">
-                <span className="h-px w-8 bg-foreground/30" />
-                Live reservations
-              </span>
-              <h1 className="font-display text-4xl tracking-tight lg:text-6xl">
-                {board?.businessName ?? "The Copper Table"}
-              </h1>
-              <p className="mt-4 text-lg text-muted-foreground">
-                {board?.dateLabel ?? "Loading today's lunch board…"}
-              </p>
-            </div>
-
-            <div className="flex flex-col items-start gap-2 sm:items-end">
-              <div
-                className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 font-mono text-xs transition-colors ${
-                  pulse
-                    ? "border-foreground/30 bg-foreground/10"
-                    : "border-foreground/15 bg-background"
-                }`}
-              >
-                <span
-                  className={`h-2 w-2 rounded-full bg-foreground ${pulse ? "animate-ping" : "animate-pulse"}`}
-                />
-                Live · updates every 2s
-              </div>
-              {data?.updatedAt ? (
-                <span className="font-mono text-xs text-muted-foreground">
-                  Last sync {formatUpdated(data.updatedAt)}
-                </span>
-              ) : null}
-            </div>
+          <header className="mb-12 lg:mb-16">
+            <span className="mb-6 inline-flex items-center gap-3 font-mono text-sm text-muted-foreground">
+              <span className="h-px w-8 bg-foreground/30" />
+              Live reservations
+            </span>
+            <h1 className="font-display text-4xl tracking-tight lg:text-6xl">
+              {board?.businessName ?? "The Copper Table"}
+            </h1>
+            <p className="mt-4 text-lg text-muted-foreground">
+              {board?.dateLabel ?? "Loading today's lunch board…"}
+            </p>
           </header>
 
           <div className="mb-12 grid gap-4 sm:grid-cols-3 lg:mb-16">
