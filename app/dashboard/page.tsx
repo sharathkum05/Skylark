@@ -1,10 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Clock, Phone, Users, UtensilsCrossed } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type Booking = {
   id: string;
@@ -93,136 +93,175 @@ export default function DashboardPage() {
   const board = data?.board;
 
   return (
-    <main className="min-h-screen bg-[#f7f5f0] text-foreground">
-      <div className="mx-auto max-w-6xl px-6 py-10">
-        <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-              Skylark · Owner dashboard
-            </p>
-            <h1 className="mt-2 font-serif text-4xl tracking-tight">
-              {board?.businessName ?? "The Copper Table"}
-            </h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {board?.dateLabel ?? "Loading today's lunch board…"}
-            </p>
-          </div>
+    <main className="relative min-h-screen overflow-x-hidden bg-background text-foreground noise-overlay">
+      {/* Subtle grid — matches landing hero */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-30">
+        {[...Array(8)].map((_, i) => (
+          <div
+            key={`h-${i}`}
+            className="absolute h-px bg-foreground/10"
+            style={{ top: `${12.5 * (i + 1)}%`, left: 0, right: 0 }}
+          />
+        ))}
+        {[...Array(12)].map((_, i) => (
+          <div
+            key={`v-${i}`}
+            className="absolute w-px bg-foreground/10"
+            style={{ left: `${8.33 * (i + 1)}%`, top: 0, bottom: 0 }}
+          />
+        ))}
+      </div>
 
-          <div className="flex items-center gap-3">
-            <Badge
-              variant="outline"
-              className={`gap-2 px-3 py-1.5 text-xs ${pulse ? "border-emerald-500 bg-emerald-50" : ""}`}
-            >
-              <span
-                className={`h-2 w-2 rounded-full bg-emerald-500 ${pulse ? "animate-ping" : "animate-pulse"}`}
-              />
-              Live · updates every 2s
-            </Badge>
-            {data?.updatedAt ? (
-              <span className="text-xs text-muted-foreground">
-                Last sync {formatUpdated(data.updatedAt)}
-              </span>
-            ) : null}
+      <div className="relative z-10">
+        {/* Header bar — matches landing nav typography */}
+        <header className="border-b border-foreground/10 bg-background/80 backdrop-blur-xl">
+          <div className="mx-auto flex h-16 max-w-[1400px] items-center justify-between px-6 lg:px-12">
+            <Link href="/" className="flex items-center gap-2">
+              <span className="font-display text-xl tracking-tight">Skylark</span>
+              <span className="mt-0.5 font-mono text-[10px] text-muted-foreground">TM</span>
+            </Link>
+            <span className="font-mono text-xs text-muted-foreground">Owner dashboard</span>
           </div>
         </header>
 
-        <div className="mb-8 grid gap-4 sm:grid-cols-3">
-          <StatCard
-            icon={<UtensilsCrossed className="h-4 w-4" />}
-            label="Tables booked"
-            value={`${board?.stats.booked ?? 0} / ${board?.stats.total ?? 6}`}
-          />
-          <StatCard
-            icon={<Users className="h-4 w-4" />}
-            label="Guests expected"
-            value={String(board?.stats.guests ?? 0)}
-          />
-          <StatCard
-            icon={<Clock className="h-4 w-4" />}
-            label="Open slots"
-            value={String(board?.stats.available ?? 6)}
-          />
-        </div>
+        <div className="mx-auto max-w-[1400px] px-6 py-16 lg:px-12 lg:py-24">
+          <header className="mb-12 flex flex-col gap-6 lg:mb-16 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <span className="mb-6 inline-flex items-center gap-3 font-mono text-sm text-muted-foreground">
+                <span className="h-px w-8 bg-foreground/30" />
+                Live reservations
+              </span>
+              <h1 className="font-display text-4xl tracking-tight lg:text-6xl">
+                {board?.businessName ?? "The Copper Table"}
+              </h1>
+              <p className="mt-4 text-lg text-muted-foreground">
+                {board?.dateLabel ?? "Loading today's lunch board…"}
+              </p>
+            </div>
 
-        <section>
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-medium">Lunch reservations</h2>
-            <p className="text-sm text-muted-foreground">1:00 PM – 4:00 PM service</p>
+            <div className="flex flex-col items-start gap-2 sm:items-end">
+              <div
+                className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 font-mono text-xs transition-colors ${
+                  pulse
+                    ? "border-foreground/30 bg-foreground/10"
+                    : "border-foreground/15 bg-background"
+                }`}
+              >
+                <span
+                  className={`h-2 w-2 rounded-full bg-foreground ${pulse ? "animate-ping" : "animate-pulse"}`}
+                />
+                Live · updates every 2s
+              </div>
+              {data?.updatedAt ? (
+                <span className="font-mono text-xs text-muted-foreground">
+                  Last sync {formatUpdated(data.updatedAt)}
+                </span>
+              ) : null}
+            </div>
+          </header>
+
+          <div className="mb-12 grid gap-4 sm:grid-cols-3 lg:mb-16">
+            <StatCard
+              icon={<UtensilsCrossed className="h-4 w-4" />}
+              label="Tables booked"
+              value={`${board?.stats.booked ?? 0} / ${board?.stats.total ?? 6}`}
+            />
+            <StatCard
+              icon={<Users className="h-4 w-4" />}
+              label="Guests expected"
+              value={String(board?.stats.guests ?? 0)}
+            />
+            <StatCard
+              icon={<Clock className="h-4 w-4" />}
+              label="Open slots"
+              value={String(board?.stats.available ?? 6)}
+            />
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {board?.slots.map((slot) => (
-              <SlotCard key={slot.slotKey} slot={slot} />
-            )) ??
-              Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="h-40 animate-pulse rounded-xl bg-muted" />
-              ))}
-          </div>
-        </section>
+          <section className="mb-12 lg:mb-16">
+            <div className="mb-8 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <h2 className="font-display text-3xl tracking-tight lg:text-4xl">
+                Lunch reservations
+              </h2>
+              <p className="font-mono text-sm text-muted-foreground">1:00 PM – 4:00 PM service</p>
+            </div>
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Recent bookings</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {board?.slots.map((slot) => (
+                <SlotCard key={slot.slotKey} slot={slot} />
+              )) ??
+                Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="h-40 animate-pulse rounded-sm border border-foreground/10 bg-muted/40" />
+                ))}
+            </div>
+          </section>
+
+          <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
+            <Panel title="Recent bookings">
               {board?.bookings.length ? (
-                board.bookings.map((booking) => (
-                  <div
-                    key={booking.id}
-                    className="flex items-center justify-between rounded-lg border bg-background px-4 py-3"
-                  >
-                    <div>
-                      <p className="font-medium">{booking.guestName}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Party of {booking.partySize} ·{" "}
-                        {board.slots.find((s) => s.booking?.id === booking.id)?.label ??
-                          "Lunch"}
+                <div className="divide-y divide-foreground/10">
+                  {board.bookings.map((booking) => (
+                    <div
+                      key={booking.id}
+                      className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0"
+                    >
+                      <div>
+                        <p className="font-medium">{booking.guestName}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Party of {booking.partySize} ·{" "}
+                          {board.slots.find((s) => s.booking?.id === booking.id)?.label ?? "Lunch"}
+                        </p>
+                      </div>
+                      <p className="font-mono text-sm text-muted-foreground">
+                        {formatPhone(booking.guestPhone)}
                       </p>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {formatPhone(booking.guestPhone)}
-                    </p>
-                  </div>
-                ))
+                  ))}
+                </div>
               ) : (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground">
                   No bookings yet. Call the demo line to book a table.
                 </p>
               )}
-            </CardContent>
-          </Card>
+            </Panel>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Guest confirmations</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
+            <Panel title="Guest confirmations">
               {data?.confirmations.length ? (
-                data.confirmations.map((item) => (
-                  <div key={item.id} className="rounded-lg border bg-background px-4 py-3">
-                    <div className="mb-1 flex items-center justify-between gap-2">
-                      <p className="text-sm font-medium">{item.guestName}</p>
-                      <span className="text-xs text-muted-foreground">
-                        {formatUpdated(item.createdAt)}
-                      </span>
+                <div className="space-y-6">
+                  {data.confirmations.map((item) => (
+                    <div key={item.id} className="border-b border-foreground/10 pb-6 last:border-0 last:pb-0">
+                      <div className="mb-2 flex items-center justify-between gap-2">
+                        <p className="font-medium">{item.guestName}</p>
+                        <span className="font-mono text-xs text-muted-foreground">
+                          {formatUpdated(item.createdAt)}
+                        </span>
+                      </div>
+                      <p className="text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+                      <p className="mt-2 font-mono text-xs text-muted-foreground/70">
+                        Demo confirmation · real SMS when Twilio is verified
+                      </p>
                     </div>
-                    <p className="text-sm leading-relaxed text-muted-foreground">{item.body}</p>
-                    <p className="mt-2 text-xs text-muted-foreground/70">
-                      Demo confirmation · real SMS when Twilio is verified
-                    </p>
-                  </div>
-                ))
+                  ))}
+                </div>
               ) : (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground">
                   Confirmation messages appear here when guests book by phone.
                 </p>
               )}
-            </CardContent>
-          </Card>
+            </Panel>
+          </div>
         </div>
       </div>
     </main>
+  );
+}
+
+function Panel({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="border-t border-foreground/10 pt-8 lg:pt-10">
+      <h3 className="mb-6 font-display text-2xl tracking-tight lg:text-3xl">{title}</h3>
+      {children}
+    </section>
   );
 }
 
@@ -236,17 +275,15 @@ function StatCard({
   value: string;
 }) {
   return (
-    <Card className="py-4">
-      <CardContent className="flex items-center gap-4 px-6">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/5 text-primary">
-          {icon}
-        </div>
-        <div>
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
-          <p className="text-2xl font-semibold tracking-tight">{value}</p>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="flex items-center gap-4 border border-foreground/10 bg-card px-6 py-5">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center border border-foreground/10 text-foreground">
+        {icon}
+      </div>
+      <div>
+        <p className="font-mono text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
+        <p className="font-display text-3xl tracking-tight">{value}</p>
+      </div>
+    </div>
   );
 }
 
@@ -254,35 +291,42 @@ function SlotCard({ slot }: { slot: Slot }) {
   const booked = slot.status === "booked" && slot.booking;
 
   return (
-    <Card
-      className={`overflow-hidden py-0 transition-colors ${
-        booked ? "border-[#c4a574] bg-[#fdf9f2] shadow-sm" : "border-dashed bg-background"
+    <div
+      className={`border p-5 transition-colors ${
+        booked
+          ? "border-foreground/25 bg-foreground/[0.03]"
+          : "border-dashed border-foreground/15 bg-background"
       }`}
     >
-      <CardContent className="p-5">
-        <div className="mb-4 flex items-center justify-between">
-          <p className="text-2xl font-semibold tracking-tight">{slot.label}</p>
-          <Badge variant={booked ? "default" : "secondary"}>
-            {booked ? "Booked" : "Open"}
-          </Badge>
-        </div>
+      <div className="mb-4 flex items-center justify-between">
+        <p className="font-display text-3xl tracking-tight">{slot.label}</p>
+        <Badge
+          variant={booked ? "default" : "outline"}
+          className={
+            booked
+              ? "rounded-full bg-foreground px-3 text-background"
+              : "rounded-full border-foreground/20 font-mono text-xs"
+          }
+        >
+          {booked ? "Booked" : "Open"}
+        </Badge>
+      </div>
 
-        {booked ? (
-          <div className="space-y-2 text-sm">
-            <p className="font-medium text-lg">{slot.booking!.guestName}</p>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Users className="h-3.5 w-3.5" />
-              Party of {slot.booking!.partySize}
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Phone className="h-3.5 w-3.5" />
-              {formatPhone(slot.booking!.guestPhone)}
-            </div>
+      {booked ? (
+        <div className="space-y-2 text-sm">
+          <p className="text-lg font-medium">{slot.booking!.guestName}</p>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Users className="h-3.5 w-3.5" />
+            Party of {slot.booking!.partySize}
           </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">Available for walk-in or phone booking</p>
-        )}
-      </CardContent>
-    </Card>
+          <div className="flex items-center gap-2 font-mono text-muted-foreground">
+            <Phone className="h-3.5 w-3.5" />
+            {formatPhone(slot.booking!.guestPhone)}
+          </div>
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">Available for walk-in or phone booking</p>
+      )}
+    </div>
   );
 }
