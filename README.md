@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/skylark-wordmark.svg" alt="Skylark" width="220" />
+<img src="docs/skylark-logo.png" alt="Skylark" width="240" />
 
 # Voice agents for inbound & outbound calls
 
