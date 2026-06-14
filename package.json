@@ -8,7 +8,8 @@
     "lint": "eslint .",
     "start": "next start",
     "provision:phone": "node --env-file=.env.local scripts/provision-phone.mjs",
-    "provision:demo": "node --env-file=.env.local scripts/provision-demo-line.mjs"
+    "provision:demo": "node --env-file=.env.local scripts/provision-demo-line.mjs",
+    "update:inbound": "node --env-file=.env.local scripts/update-inbound-assistant.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -46,12 +47,14 @@
     "clsx": "^2.1.1",
     "cmdk": "1.0.4",
     "date-fns": "4.1.0",
+    "date-fns-tz": "^3.2.0",
     "embla-carousel-react": "8.5.1",
     "expo": "latest",
     "expo-asset": "latest",
     "expo-file-system": "latest",
     "expo-gl": "latest",
     "geist": "1.7.0",
+    "googleapis": "^173.0.0",
     "input-otp": "1.4.1",
     "lucide-react": "^0.454.0",
     "next": "16.0.10",
@@ -67,6 +70,7 @@
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7",
     "three": "0.183.2",
+    "twilio": "^6.0.2",
     "vaul": "^1.1.2",
     "zod": "3.25.76"
   },
