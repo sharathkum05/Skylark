@@ -6,6 +6,8 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
+import { getDataDir } from "@/lib/data-dir";
+
 export interface Booking {
   id: string;
   startIso: string;
@@ -16,7 +18,7 @@ export interface Booking {
   calendarEventId?: string;
 }
 
-const DATA_FILE = join(process.cwd(), "data", "bookings.json");
+const DATA_FILE = join(getDataDir(), "bookings.json");
 
 async function readAll(): Promise<Booking[]> {
   try {

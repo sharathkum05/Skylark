@@ -111,7 +111,66 @@ Open **`/dashboard`** during a demo call and watch a slot move from **Open** →
 
 ---
 
-## Quick start
+## Deploy to Vercel
+
+The app builds on Vercel out of the box. Use GitHub import (recommended).
+
+### 1 · Import project
+
+1. Go to [vercel.com/new](https://vercel.com/new)
+2. Import **`sharathkum05/Skylark`** from GitHub
+3. Framework preset: **Next.js** (auto-detected)
+4. Deploy (env vars can be added on first deploy or after)
+
+### 2 · Environment variables
+
+In Vercel → **Project → Settings → Environment Variables**, add:
+
+| Variable | Example |
+|----------|---------|
+| `VAPI_PRIVATE_KEY` | your Vapi private key |
+| `VAPI_INBOUND_ASSISTANT_ID` | `df8f440b-...` |
+| `PUBLIC_URL` | `https://your-app.vercel.app` |
+| `NEXT_PUBLIC_SKYLARK_DEMO_NUMBER` | `+1 (803) 879-1349` |
+| `GOOGLE_CLIENT_ID` | (optional) |
+| `GOOGLE_CLIENT_SECRET` | (optional) |
+| `GOOGLE_REFRESH_TOKEN` | (optional) |
+| `GOOGLE_CALENDAR_ID` | `primary` |
+| `GOOGLE_REDIRECT_URI` | `https://your-app.vercel.app/api/auth/google/callback` |
+| `TWILIO_ACCOUNT_SID` | (optional) |
+| `TWILIO_AUTH_TOKEN` | (optional) |
+| `TWILIO_FROM_NUMBER` | (optional) |
+
+`PUBLIC_URL` must be your **production Vercel URL** (no trailing slash).
+
+### 3 · Point Vapi at production
+
+After the first deploy, from your machine:
+
+```bash
+# In .env.local set PUBLIC_URL to your Vercel URL, then:
+npm run update:inbound
+```
+
+This updates the Vapi assistant tool URLs to `https://your-app.vercel.app/api/vapi-inbound-tool`.
+
+### 4 · Google OAuth (if using Calendar)
+
+Add this **Authorized redirect URI** in Google Cloud Console:
+
+```
+https://your-app.vercel.app/api/auth/google/callback
+```
+
+Then visit `https://your-app.vercel.app/api/auth/google` once to refresh tokens.
+
+### Production note
+
+Bookings use ephemeral `/tmp` storage on Vercel (fine for demos; resets between cold starts). For persistent production data, add a database (Supabase, Postgres, Vercel KV).
+
+---
+
+## Quick start (local)
 
 ### Prerequisites
 
@@ -238,7 +297,8 @@ This is a **public repository**. Secrets must stay local.
 - [x] Live owner dashboard
 - [x] Google Calendar sync
 - [x] Demo confirmation fallback
-- [ ] Production deploy (Vercel) with persistent database
+- [x] Vercel-ready build + ephemeral booking store for demos
+- [ ] Persistent database for production bookings
 - [ ] CRM connectors (HubSpot, Salesforce)
 - [ ] Multi-tenant business onboarding
 

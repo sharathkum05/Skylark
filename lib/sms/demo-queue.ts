@@ -1,6 +1,8 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
+import { getDataDir } from "@/lib/data-dir";
+
 export interface DemoConfirmation {
   id: string;
   to: string;
@@ -12,7 +14,7 @@ export interface DemoConfirmation {
   channel: "demo";
 }
 
-const DATA_FILE = join(process.cwd(), "data", "demo-sms.json");
+const DATA_FILE = join(getDataDir(), "demo-sms.json");
 
 async function readAll(): Promise<DemoConfirmation[]> {
   try {
