@@ -3,15 +3,6 @@
 import { ArrowUpRight } from "lucide-react";
 import { AnimatedWave } from "./animated-wave";
 
-const footerLinks = {
-  Product: [
-    { name: "Features", href: "#features" },
-    { name: "How it works", href: "#how-it-works" },
-    { name: "Integrations", href: "#integrations" },
-    { name: "Security", href: "#security" },
-  ],
-};
-
 const socialLinks = [
   { name: "GitHub", href: "https://github.com/sharathkum05" },
   { name: "LinkedIn", href: "https://www.linkedin.com/in/sharath0524/" },
@@ -28,9 +19,9 @@ export function FooterSection() {
       <div className="relative z-10 max-w-[1400px] mx-auto px-6 lg:px-12">
         {/* Main Footer */}
         <div className="py-16 lg:py-24">
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-12 lg:gap-8">
+          <div className="grid gap-12 lg:gap-8">
             {/* Brand Column */}
-            <div className="col-span-2">
+            <div>
               <a href="#" className="inline-flex items-center gap-2 mb-6">
                 <span className="text-2xl font-display">Skylark</span>
                 <span className="text-xs text-muted-foreground font-mono">TM</span>
@@ -55,30 +46,6 @@ export function FooterSection() {
                 ))}
               </div>
             </div>
-
-            {/* Link Columns */}
-            {Object.entries(footerLinks).map(([title, links]) => (
-              <div key={title}>
-                <h3 className="text-sm font-medium mb-6">{title}</h3>
-                <ul className="space-y-4">
-                  {links.map((link) => (
-                    <li key={link.name}>
-                      <a
-                        href={link.href}
-                        className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-2"
-                      >
-                        {link.name}
-                        {"badge" in link && link.badge && (
-                          <span className="text-xs px-2 py-0.5 bg-foreground text-background rounded-full">
-                            {link.badge}
-                          </span>
-                        )}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
           </div>
         </div>
 
