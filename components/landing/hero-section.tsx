@@ -5,16 +5,12 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Phone } from "lucide-react";
 import { AnimatedSphere } from "./animated-sphere";
 import { DEMO_VIDEO_URL } from "@/lib/demo-video";
+import { SKYLARK_DEMO_NUMBER, SKYLARK_DEMO_TEL } from "@/lib/demo-number";
 
 const words = ["answers", "books", "syncs", "runs 24/7"];
 
 // Keep the rotating line from jumping as word length changes.
 const longestWordChars = Math.max(...words.map((w) => w.length));
-
-// Real Vapi number people can call to try Skylark live. Set after provisioning:
-//   NEXT_PUBLIC_SKYLARK_DEMO_NUMBER="+1 (856) 348-5830"
-const DEMO_NUMBER = process.env.NEXT_PUBLIC_SKYLARK_DEMO_NUMBER || "+1 (000) 000-0000";
-const DEMO_TEL = DEMO_NUMBER.replace(/[^\d+]/g, "");
 
 export function HeroSection() {
   const [isVisible, setIsVisible] = useState(false);
@@ -137,11 +133,11 @@ export function HeroSection() {
                 Call the inbound agent live:
               </span>
               <a
-                href={`tel:${DEMO_TEL}`}
+                href={`tel:${SKYLARK_DEMO_TEL}`}
                 className="inline-flex items-center gap-2 px-4 h-10 rounded-full border border-foreground/20 hover:bg-foreground/5 transition-colors font-mono text-sm"
               >
                 <Phone className="w-4 h-4" />
-                {DEMO_NUMBER}
+                {SKYLARK_DEMO_NUMBER}
               </a>
             </div>
           </div>
