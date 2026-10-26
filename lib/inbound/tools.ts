@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import { BUSINESS } from "@/lib/booking/config";
 import {
   formatSlotForSpeech,
@@ -6,7 +8,7 @@ import {
   resolveSlotIso,
   slotsToSpeech,
 } from "@/lib/booking/slots";
-import { type Booking, saveBooking } from "@/lib/booking/store";
+import { attachCalendarEvent, type Booking, saveBooking } from "@/lib/booking/store";
 import { createCalendarEvent, getBusySlotStarts } from "@/lib/calendar/google";
 import { sendBookingConfirmation } from "@/lib/sms/confirmation";
 
@@ -63,9 +65,12 @@ export async function handleBookSlot(args: unknown): Promise<string> {
   if (!startIso) {
     return `${requested} is not one of our lunch times. Call check_availability again and offer one of the returned times.`;
   }
+  if (new Date(startIso).getTime() <= Date.now()) {
+    return "That time has already passed. Call check_availability again and offer one of the returned times.";
+  }
 
   const booking: Booking = {
-    id: `b_${Date.now().toString(36)}`,
+    id: `b_${randomUUID()}`,
     startIso,
     partySize,
     guestName,
@@ -80,7 +85,7 @@ export async function handleBookSlot(args: unknown): Promise<string> {
   }
 
   const calendarEventId = await createCalendarEvent(booking).catch(() => null);
-  if (calendarEventId) booking.calendarEventId = calendarEventId;
+  if (calendarEventId) await attachCalendarEvent(booking.id, calendarEventId).catch(() => undefined);
 
   // The table is already held — a confirmation failure must not read as a failed booking.
   const confirmation = await sendBookingConfirmation({

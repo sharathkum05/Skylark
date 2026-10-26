@@ -10,14 +10,12 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const date = searchParams.get("date") ?? undefined;
 
-  const [board, confirmations] = await Promise.all([
-    getLunchBoard(date),
-    listDemoConfirmations(),
-  ]);
+  const board = await getLunchBoard(date);
+  const confirmations = await listDemoConfirmations(board.date);
 
   return NextResponse.json({
     board,
-    confirmations: confirmations.slice(0, 5),
+    confirmations: confirmations.slice(0, 10),
     updatedAt: new Date().toISOString(),
   });
 }

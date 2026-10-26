@@ -1,10 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { Clock, Phone, Users, UtensilsCrossed } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { addDays, format, parseISO } from "date-fns";
+import {
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Phone,
+  Users,
+  UtensilsCrossed,
+} from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 type Booking = {
   id: string;
@@ -19,7 +31,7 @@ type Slot = {
   time: string;
   label: string;
   slotKey: string;
-  status: "available" | "booked";
+  status: "available" | "booked" | "closed";
   booking: Booking | null;
 };
 
@@ -27,6 +39,8 @@ type Board = {
   businessName: string;
   date: string;
   dateLabel: string;
+  today: string;
+  isToday: boolean;
   slots: Slot[];
   stats: { total: number; booked: number; available: number; guests: number };
   bookings: Booking[];
@@ -39,6 +53,8 @@ type Confirmation = {
   guestName: string;
   createdAt: string;
 };
+
+type DayCount = { date: string; bookings: number; guests: number };
 
 type DashboardData = {
   board: Board;
@@ -62,28 +78,79 @@ function formatUpdated(iso: string): string {
   });
 }
 
+/** `yyyy-MM-dd` ↔ a local Date at midnight, for the date picker. */
+const toDate = (iso: string) => parseISO(iso);
+const toIso = (d: Date) => format(d, "yyyy-MM-dd");
+
+function readDateParam(): string | null {
+  if (typeof window === "undefined") return null;
+  const value = new URLSearchParams(window.location.search).get("date");
+  return value && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null;
+}
+
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
+  /** null = follow today in the restaurant's time zone (rolls over at midnight). */
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [calendarMonth, setCalendarMonth] = useState<string | null>(null);
+  const [monthDays, setMonthDays] = useState<DayCount[]>([]);
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  useEffect(() => {
+    setSelectedDate(readDateParam());
+  }, []);
 
   useEffect(() => {
     let active = true;
+    const query = selectedDate ? `?date=${selectedDate}` : "";
 
     async function load() {
-      const res = await fetch("/api/dashboard");
+      const res = await fetch(`/api/dashboard${query}`);
       if (!res.ok || !active) return;
       const json = (await res.json()) as DashboardData;
       setData(json);
     }
 
     load();
-    const timer = setInterval(load, 2000);
+    // Today's board is live; past and future days are a log and only need one fetch.
+    const live = !selectedDate || selectedDate === data?.board.today;
+    const timer = live ? setInterval(load, 2000) : undefined;
     return () => {
       active = false;
       clearInterval(timer);
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDate, data?.board.today]);
 
   const board = data?.board;
+  const shownMonth = calendarMonth ?? board?.date.slice(0, 7);
+
+  useEffect(() => {
+    if (!shownMonth) return;
+    let active = true;
+    fetch(`/api/dashboard/calendar?month=${shownMonth}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json: { days: DayCount[] } | null) => {
+        if (active && json) setMonthDays(json.days);
+      });
+    return () => {
+      active = false;
+    };
+  }, [shownMonth, board?.stats.booked]);
+
+  const goTo = useCallback(
+    (date: string | null) => {
+      const next = date && date !== board?.today ? date : null;
+      setSelectedDate(next);
+      setCalendarMonth(null);
+      window.history.replaceState(null, "", next ? `?date=${next}` : window.location.pathname);
+    },
+    [board?.today],
+  );
+
+  const shiftDay = (days: number) => {
+    if (board) goTo(toIso(addDays(toDate(board.date), days)));
+  };
 
   return (
     <main className="relative min-h-screen overflow-x-hidden bg-background text-foreground noise-overlay">
@@ -113,7 +180,20 @@ export default function DashboardPage() {
               <span className="font-display text-xl tracking-tight">Skylark</span>
               <span className="mt-0.5 font-mono text-[10px] text-muted-foreground">TM</span>
             </Link>
-            <span className="font-mono text-xs text-muted-foreground">Owner dashboard</span>
+            <div className="flex items-center gap-4">
+              <span className="font-mono text-xs text-muted-foreground">Owner dashboard</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="font-mono text-xs"
+                onClick={async () => {
+                  await fetch("/api/auth/login", { method: "DELETE" });
+                  window.location.assign("/login");
+                }}
+              >
+                Sign out
+              </Button>
+            </div>
           </div>
         </header>
 
@@ -121,14 +201,74 @@ export default function DashboardPage() {
           <header className="mb-12 lg:mb-16">
             <span className="mb-6 inline-flex items-center gap-3 font-mono text-sm text-muted-foreground">
               <span className="h-px w-8 bg-foreground/30" />
-              Live reservations
+              {!board || board.isToday ? "Live reservations" : "Reservation log"}
             </span>
             <h1 className="font-display text-4xl tracking-tight lg:text-6xl">
               {board?.businessName ?? "The Copper Table"}
             </h1>
-            <p className="mt-4 text-lg text-muted-foreground">
-              {board?.dateLabel ?? "Loading today's lunch board…"}
-            </p>
+
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label="Previous day"
+                onClick={() => shiftDay(-1)}
+                disabled={!board}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+
+              <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="h-10 gap-2 px-4 text-base" disabled={!board}>
+                    <CalendarDays className="h-4 w-4" />
+                    {board?.dateLabel ?? "Loading today's lunch board…"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  {board && (
+                    <Calendar
+                      mode="single"
+                      selected={toDate(board.date)}
+                      month={toDate(`${shownMonth}-01`)}
+                      onMonthChange={(m) => setCalendarMonth(format(m, "yyyy-MM"))}
+                      onSelect={(d) => {
+                        if (!d) return;
+                        goTo(toIso(d));
+                        setPickerOpen(false);
+                      }}
+                      modifiers={{ hasBookings: monthDays.map((d) => toDate(d.date)) }}
+                      modifiersClassNames={{
+                        hasBookings:
+                          "[&_button]:font-semibold [&_button]:underline [&_button]:decoration-2 [&_button]:underline-offset-4",
+                      }}
+                    />
+                  )}
+                </PopoverContent>
+              </Popover>
+
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label="Next day"
+                onClick={() => shiftDay(1)}
+                disabled={!board}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+
+              {board && !board.isToday && (
+                <Button variant="ghost" className="font-mono text-sm" onClick={() => goTo(null)}>
+                  Back to today
+                </Button>
+              )}
+              {board?.isToday && (
+                <span className="inline-flex items-center gap-2 font-mono text-xs text-muted-foreground">
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+                  Live
+                </span>
+              )}
+            </div>
           </header>
 
           <div className="mb-12 grid gap-4 sm:grid-cols-3 lg:mb-16">
@@ -191,7 +331,9 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <p className="text-muted-foreground">
-                  No bookings yet. Call the demo line to book a table.
+                  {board && !board.isToday
+                    ? "No bookings on this day."
+                    : "No bookings yet. Call the demo line to book a table."}
                 </p>
               )}
             </Panel>
@@ -217,6 +359,38 @@ export default function DashboardPage() {
               ) : (
                 <p className="text-muted-foreground">
                   Confirmation messages appear here when guests book by phone.
+                </p>
+              )}
+            </Panel>
+          </div>
+
+          <div className="mt-12 lg:mt-16">
+            <Panel title="Booking log">
+              {monthDays.length ? (
+                <div className="divide-y divide-foreground/10">
+                  {[...monthDays].reverse().map((day) => (
+                    <button
+                      key={day.date}
+                      type="button"
+                      onClick={() => goTo(day.date)}
+                      className={`flex w-full items-center justify-between gap-4 py-4 text-left transition-colors first:pt-0 last:pb-0 hover:text-foreground ${
+                        day.date === board?.date ? "text-foreground" : "text-muted-foreground"
+                      }`}
+                    >
+                      <span className="font-medium">
+                        {format(toDate(day.date), "EEEE, MMMM d")}
+                        {day.date === board?.today ? " · today" : ""}
+                      </span>
+                      <span className="font-mono text-sm">
+                        {day.bookings} {day.bookings === 1 ? "table" : "tables"} · {day.guests}{" "}
+                        {day.guests === 1 ? "guest" : "guests"}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground">
+                  No bookings in {shownMonth ? format(toDate(`${shownMonth}-01`), "MMMM yyyy") : "this month"}.
                 </p>
               )}
             </Panel>
@@ -260,13 +434,16 @@ function StatCard({
 
 function SlotCard({ slot }: { slot: Slot }) {
   const booked = slot.status === "booked" && slot.booking;
+  const closed = slot.status === "closed";
 
   return (
     <div
       className={`border p-5 transition-colors ${
         booked
           ? "border-foreground/25 bg-foreground/[0.03]"
-          : "border-dashed border-foreground/15 bg-background"
+          : closed
+            ? "border-dashed border-foreground/10 bg-muted/30 opacity-60"
+            : "border-dashed border-foreground/15 bg-background"
       }`}
     >
       <div className="mb-4 flex items-center justify-between">
@@ -279,7 +456,7 @@ function SlotCard({ slot }: { slot: Slot }) {
               : "rounded-full border-foreground/20 font-mono text-xs"
           }
         >
-          {booked ? "Booked" : "Open"}
+          {booked ? "Booked" : closed ? "Closed" : "Open"}
         </Badge>
       </div>
 
@@ -296,7 +473,9 @@ function SlotCard({ slot }: { slot: Slot }) {
           </div>
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">Available for walk-in or phone booking</p>
+        <p className="text-sm text-muted-foreground">
+          {closed ? "Service time has passed" : "Available for walk-in or phone booking"}
+        </p>
       )}
     </div>
   );

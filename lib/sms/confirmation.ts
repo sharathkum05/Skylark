@@ -1,5 +1,6 @@
+import { formatInTimeZone } from "date-fns-tz";
+
 import { BUSINESS } from "@/lib/booking/config";
-import { formatSlotForSpeech } from "@/lib/booking/slots";
 
 import { queueDemoConfirmation } from "./demo-queue";
 import { formatPhoneE164 } from "./format-phone";
@@ -10,7 +11,7 @@ export function buildConfirmationBody(opts: {
   partySize: number;
   startIso: string;
 }): string {
-  const when = formatSlotForSpeech(opts.startIso);
+  const when = formatInTimeZone(new Date(opts.startIso), BUSINESS.timezone, "EEE, MMM d 'at' h:mm a");
   return `Hi ${opts.guestName}, you're booked at ${BUSINESS.name} for ${opts.partySize} on ${when}. See you soon! — Skylark`;
 }
 

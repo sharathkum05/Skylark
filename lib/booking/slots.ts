@@ -2,9 +2,9 @@ import { format, parseISO } from "date-fns";
 import { formatInTimeZone, fromZonedTime, toZonedTime } from "date-fns-tz";
 
 import { BUSINESS } from "./config";
-import { listBookings } from "./store";
+import { listBookingsForDate } from "./store";
 
-function todayInBusinessTz(): string {
+export function todayInBusinessTz(): string {
   return formatInTimeZone(new Date(), BUSINESS.timezone, "yyyy-MM-dd");
 }
 
@@ -46,15 +46,16 @@ export async function getAvailableLunchSlots(date?: string): Promise<{
   const targetDate = date || todayInBusinessTz();
   const slots = lunchSlotStarts(targetDate);
   const booked = new Set(
-    (await listBookings()).map((b) => resolveSlotIso(b.startIso) ?? b.startIso),
+    (await listBookingsForDate(targetDate)).map((b) => resolveSlotIso(b.startIso) ?? b.startIso),
   );
+  const now = Date.now();
 
   const available: string[] = [];
   const taken: string[] = [];
 
   for (const iso of slots) {
     if (booked.has(iso)) taken.push(iso);
-    else available.push(iso);
+    else if (new Date(iso).getTime() > now) available.push(iso); // never offer a slot that has started
   }
 
   return { date: targetDate, available, taken };

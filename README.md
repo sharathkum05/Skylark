@@ -130,6 +130,9 @@ In Vercel → **Project → Settings → Environment Variables**, add:
 | `VAPI_INBOUND_ASSISTANT_ID` | `df8f440b-...` |
 | `PUBLIC_URL` | `https://your-app.vercel.app` |
 | `NEXT_PUBLIC_SKYLARK_DEMO_NUMBER` | `+1 (803) 879-1349` |
+| `DATABASE_URL` | Supabase pooled Postgres URL (port 6543) |
+| `ADMIN_USERNAME` | `admin` |
+| `ADMIN_PASSWORD` | a strong password (dashboard stays locked without it) |
 | `GOOGLE_CLIENT_ID` | (optional) |
 | `GOOGLE_CLIENT_SECRET` | (optional) |
 | `GOOGLE_REFRESH_TOKEN` | (optional) |
@@ -164,7 +167,9 @@ Then visit `https://your-app.vercel.app/api/auth/google` once to refresh tokens.
 
 ### Production note
 
-Bookings use ephemeral `/tmp` storage on Vercel (fine for demos; resets between cold starts). For persistent production data, add a database (Supabase, Postgres, Vercel KV).
+Set `DATABASE_URL` to a Postgres database (Supabase recommended). Tables are created on first use, and a `UNIQUE` constraint on the slot prevents double-booking across every serverless instance. Without it, bookings fall back to ephemeral `/tmp` files that reset between cold starts.
+
+The owner dashboard (`/dashboard`) and its APIs require the admin login from `ADMIN_USERNAME` / `ADMIN_PASSWORD`. The Vapi tool endpoint stays public so calls keep working.
 
 ---
 
