@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 
 import { BUSINESS } from "@/lib/booking/config";
 import {
@@ -43,12 +44,20 @@ export async function handleCheckAvailability(args: unknown): Promise<string> {
     available = available.filter((iso) => !busyFromGoogle.has(iso));
   }
 
+  // State the date explicitly so relative dates ("tomorrow", "Friday") never hinge on the prompt template.
+  const today = formatInTimeZone(new Date(), BUSINESS.timezone, "EEEE, MMMM d, yyyy");
+  const checked = formatInTimeZone(
+    fromZonedTime(`${targetDate}T12:00:00`, BUSINESS.timezone),
+    BUSINESS.timezone,
+    "EEEE, MMMM d",
+  );
+
   if (available.length === 0) {
-    return `No lunch tables left for party of ${partySize} on ${targetDate}. Suggest another day or ask them to call back later.`;
+    return `Today is ${today}. No lunch tables left for party of ${partySize} on ${checked}. Suggest another day or ask them to call back later.`;
   }
 
   const exactValues = available.map((iso) => `${formatSlotForSpeech(iso)} = ${iso}`).join("; ");
-  return `For lunch on ${targetDate}, party of ${partySize}, available times are: ${slotsToSpeech(available)}. Offer these naturally — do not read as a bullet list. When booking, pass the exact datetime for the chosen time to book_slot: ${exactValues}.`;
+  return `Today is ${today}. For lunch on ${checked} (${targetDate}), party of ${partySize}, available times are: ${slotsToSpeech(available)}. Offer these naturally — do not read as a bullet list. When booking, pass the exact datetime for the chosen time to book_slot: ${exactValues}.`;
 }
 
 export async function handleBookSlot(args: unknown): Promise<string> {

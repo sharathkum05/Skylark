@@ -275,7 +275,7 @@ export default function DashboardPage() {
             <StatCard
               icon={<UtensilsCrossed className="h-4 w-4" />}
               label="Tables booked"
-              value={`${board?.stats.booked ?? 0} / ${board?.stats.total ?? 6}`}
+              value={`${board?.stats.booked ?? 0} / ${board?.stats.total ?? 7}`}
             />
             <StatCard
               icon={<Users className="h-4 w-4" />}
@@ -285,7 +285,7 @@ export default function DashboardPage() {
             <StatCard
               icon={<Clock className="h-4 w-4" />}
               label="Open slots"
-              value={String(board?.stats.available ?? 6)}
+              value={String(board?.stats.available ?? 7)}
             />
           </div>
 
@@ -294,14 +294,18 @@ export default function DashboardPage() {
               <h2 className="font-display text-3xl tracking-tight lg:text-4xl">
                 Lunch reservations
               </h2>
-              <p className="font-mono text-sm text-muted-foreground">1:00 PM – 4:00 PM service</p>
+              <p className="font-mono text-sm text-muted-foreground">
+                {board?.slots.length
+                  ? `${board.slots[0].label} – ${board.slots[board.slots.length - 1].label} service`
+                  : "Lunch service"}
+              </p>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {board?.slots.map((slot) => (
                 <SlotCard key={slot.slotKey} slot={slot} />
               )) ??
-                Array.from({ length: 6 }).map((_, i) => (
+                Array.from({ length: 7 }).map((_, i) => (
                   <div key={i} className="h-40 animate-pulse rounded-sm border border-foreground/10 bg-muted/40" />
                 ))}
             </div>
