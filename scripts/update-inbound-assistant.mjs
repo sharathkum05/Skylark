@@ -8,6 +8,11 @@
  *   VAPI_PRIVATE_KEY
  *   PUBLIC_URL=https://your-ngrok-url   (no trailing slash)
  *   VAPI_INBOUND_ASSISTANT_ID=...       (optional; defaults to live demo assistant)
+ *   VAPI_SERVER_CREDENTIAL_ID=...       (recommended; Custom Credential that authenticates tool calls)
+ *
+ * The credential is a Bearer Token created once in the Vapi dashboard
+ * (Integrations → Server Configuration → Add Custom Credential, header Authorization,
+ * Bearer prefix on). Its token must equal VAPI_SERVER_SECRET on the deployment.
  */
 
 // Minimal duplicate of lib/booking/config for Node script
@@ -24,6 +29,7 @@ const KEY = process.env.VAPI_PRIVATE_KEY;
 const PUBLIC_URL = (process.env.PUBLIC_URL || "").replace(/\/$/, "");
 const ASSISTANT_ID =
   process.env.VAPI_INBOUND_ASSISTANT_ID || "df8f440b-990b-4ae4-94cf-3c74d26b856e";
+const CREDENTIAL_ID = process.env.VAPI_SERVER_CREDENTIAL_ID;
 
 if (!KEY) {
   console.error("✗ Set VAPI_PRIVATE_KEY in .env.local");
@@ -35,6 +41,7 @@ if (!PUBLIC_URL) {
 }
 
 const toolUrl = `${PUBLIC_URL}/api/vapi-inbound-tool`;
+const toolServer = CREDENTIAL_ID ? { url: toolUrl, credentialId: CREDENTIAL_ID } : { url: toolUrl };
 
 const systemPrompt = `You are Skylark, the AI phone assistant for ${BUSINESS.name}, a ${BUSINESS.tagline}.
 You answer INBOUND calls from guests who want to book a table.
@@ -95,7 +102,7 @@ const assistantBody = {
             },
           },
         },
-        server: { url: toolUrl },
+        server: toolServer,
       },
       {
         type: "function",
@@ -116,7 +123,7 @@ const assistantBody = {
             required: ["datetime", "guest_name", "guest_phone", "party_size"],
           },
         },
-        server: { url: toolUrl },
+        server: toolServer,
       },
     ],
   },
@@ -128,6 +135,11 @@ const BASE = "https://api.vapi.ai";
 (async () => {
   console.log(`→ Updating assistant ${ASSISTANT_ID}…`);
   console.log(`  Tool URL: ${toolUrl}`);
+  console.log(
+    CREDENTIAL_ID
+      ? `  Tool auth: credential ${CREDENTIAL_ID}`
+      : "  ⚠ Tool auth: none — set VAPI_SERVER_CREDENTIAL_ID to authenticate tool calls",
+  );
 
   const res = await fetch(`${BASE}/assistant/${ASSISTANT_ID}`, {
     method: "PATCH",
@@ -146,5 +158,5 @@ const BASE = "https://api.vapi.ai";
 
   console.log("\n✓ Inbound booking assistant updated.");
   console.log(`  Greeting: "${SKYLARK_INTRO}"`);
-  console.log("\n  Next: ensure ngrok + npm run dev are running, then call your demo number.");
+  console.log(`\n  Next: make sure ${PUBLIC_URL} is up, then call your demo number.`);
 })();

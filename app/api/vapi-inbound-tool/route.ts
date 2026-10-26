@@ -4,6 +4,7 @@
 
 import { NextResponse } from "next/server";
 
+import { verifyVapiRequest } from "@/lib/auth/vapi";
 import { runInboundTool } from "@/lib/inbound/tools";
 
 export const runtime = "nodejs";
@@ -16,6 +17,11 @@ type ToolCall = {
 };
 
 export async function POST(req: Request) {
+  if ((await verifyVapiRequest(req)) === "rejected") {
+    console.warn(JSON.stringify({ evt: "vapi_auth", ok: false }));
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const body = await req.json().catch(() => ({}));
   const msg = body?.message ?? body ?? {};
   const calls: ToolCall[] =

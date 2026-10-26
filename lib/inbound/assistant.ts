@@ -51,6 +51,9 @@ function toolServerUrl(base: string, path: string): string {
 
 export function buildInboundBookingTools(publicUrl: string) {
   const url = toolServerUrl(publicUrl, "/api/vapi-inbound-tool");
+  // Vapi sends this Custom Credential's token with every tool call (see lib/auth/vapi.ts).
+  const credentialId = process.env.VAPI_SERVER_CREDENTIAL_ID;
+  const server = credentialId ? { url, credentialId } : { url };
 
   return [
     {
@@ -70,7 +73,7 @@ export function buildInboundBookingTools(publicUrl: string) {
           },
         },
       },
-      server: { url },
+      server,
     },
     {
       type: "function" as const,
@@ -92,7 +95,7 @@ export function buildInboundBookingTools(publicUrl: string) {
           required: ["datetime", "guest_name", "guest_phone", "party_size"],
         },
       },
-      server: { url },
+      server,
     },
   ];
 }
