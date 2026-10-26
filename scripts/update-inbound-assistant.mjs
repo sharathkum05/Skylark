@@ -19,7 +19,7 @@
 const BUSINESS = {
   name: "The Copper Table",
   tagline: "modern American bistro",
-  timezone: process.env.BUSINESS_TIMEZONE || "America/New_York",
+  timezone: process.env.BUSINESS_TIMEZONE || "America/Chicago",
   defaultPartySize: 2,
 };
 

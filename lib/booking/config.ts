@@ -2,7 +2,7 @@
 export const BUSINESS = {
   name: "The Copper Table",
   tagline: "modern American bistro",
-  timezone: process.env.BUSINESS_TIMEZONE || "America/New_York",
+  timezone: process.env.BUSINESS_TIMEZONE || "America/Chicago",
   /** Lunch slots offered when caller asks for "today" / lunch. */
   lunchSlots: ["13:00", "13:30", "14:00", "15:00", "15:30", "16:00", "17:00"],
   defaultPartySize: 2,
