@@ -37,16 +37,26 @@ export async function listBookings(): Promise<Booking[]> {
   return readAll();
 }
 
-export async function isSlotTaken(startIso: string): Promise<boolean> {
-  const all = await readAll();
-  return all.some((b) => b.startIso === startIso);
+/**
+ * Serialises read-check-write so concurrent calls can't both claim one slot.
+ * Per-instance only — production swaps this for a DB unique constraint on (slot).
+ */
+let writeLock: Promise<unknown> = Promise.resolve();
+
+function withWriteLock<T>(fn: () => Promise<T>): Promise<T> {
+  const run = writeLock.then(fn, fn);
+  writeLock = run.catch(() => undefined);
+  return run;
 }
 
-export async function saveBooking(booking: Booking): Promise<void> {
-  const all = await readAll();
-  if (all.some((b) => b.startIso === booking.startIso)) {
-    throw new Error("That time was just booked by another caller.");
-  }
-  all.push(booking);
-  await writeAll(all);
+/** `booking.startIso` must already be canonical (see resolveSlotIso). */
+export function saveBooking(booking: Booking): Promise<void> {
+  return withWriteLock(async () => {
+    const all = await readAll();
+    if (all.some((b) => b.startIso === booking.startIso)) {
+      throw new Error("That time was just booked by another caller.");
+    }
+    all.push(booking);
+    await writeAll(all);
+  });
 }

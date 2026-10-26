@@ -1,6 +1,12 @@
 import { BUSINESS } from "@/lib/booking/config";
-import { getAvailableLunchSlots, lunchSlotStarts, slotsToSpeech } from "@/lib/booking/slots";
-import { saveBooking } from "@/lib/booking/store";
+import {
+  formatSlotForSpeech,
+  getAvailableLunchSlots,
+  lunchSlotStarts,
+  resolveSlotIso,
+  slotsToSpeech,
+} from "@/lib/booking/slots";
+import { type Booking, saveBooking } from "@/lib/booking/store";
 import { createCalendarEvent, getBusySlotStarts } from "@/lib/calendar/google";
 import { sendBookingConfirmation } from "@/lib/sms/confirmation";
 
@@ -23,7 +29,14 @@ export async function handleCheckAvailability(args: unknown): Promise<string> {
 
   let { date: targetDate, available } = await getAvailableLunchSlots(date);
 
-  const busyFromGoogle = await getBusySlotStarts(targetDate, lunchSlotStarts(targetDate));
+  // Calendar is a secondary source — if Google is down or the token expired, the
+  // local ledger still answers so the caller never hears an error.
+  const busyFromGoogle = await getBusySlotStarts(targetDate, lunchSlotStarts(targetDate)).catch(
+    (e: unknown) => {
+      console.warn("[inbound] google freebusy failed, using ledger only:", String(e));
+      return new Set<string>();
+    },
+  );
   if (busyFromGoogle.size) {
     available = available.filter((iso) => !busyFromGoogle.has(iso));
   }
@@ -32,20 +45,26 @@ export async function handleCheckAvailability(args: unknown): Promise<string> {
     return `No lunch tables left for party of ${partySize} on ${targetDate}. Suggest another day or ask them to call back later.`;
   }
 
-  return `For lunch on ${targetDate}, party of ${partySize}, available times are: ${slotsToSpeech(available)}. Offer these naturally — do not read as a bullet list.`;
+  const exactValues = available.map((iso) => `${formatSlotForSpeech(iso)} = ${iso}`).join("; ");
+  return `For lunch on ${targetDate}, party of ${partySize}, available times are: ${slotsToSpeech(available)}. Offer these naturally — do not read as a bullet list. When booking, pass the exact datetime for the chosen time to book_slot: ${exactValues}.`;
 }
 
 export async function handleBookSlot(args: unknown): Promise<string> {
   const a = parseArgs(args);
-  const startIso = String(a.datetime ?? a.start_iso ?? a.startIso ?? "").trim();
+  const requested = String(a.datetime ?? a.start_iso ?? a.startIso ?? "").trim();
   const guestName = String(a.guest_name ?? a.guestName ?? "Guest").trim();
   const guestPhone = String(a.guest_phone ?? a.guestPhone ?? "").trim();
   const partySize = Number(a.party_size ?? a.partySize ?? BUSINESS.defaultPartySize);
 
-  if (!startIso) return "Missing booking time. Ask which slot they want.";
+  if (!requested) return "Missing booking time. Ask which slot they want.";
   if (!guestPhone) return "Need their mobile number for a confirmation text before booking.";
 
-  const booking = {
+  const startIso = resolveSlotIso(requested);
+  if (!startIso) {
+    return `${requested} is not one of our lunch times. Call check_availability again and offer one of the returned times.`;
+  }
+
+  const booking: Booking = {
     id: `b_${Date.now().toString(36)}`,
     startIso,
     partySize,
@@ -57,17 +76,21 @@ export async function handleBookSlot(args: unknown): Promise<string> {
   try {
     await saveBooking(booking);
   } catch (e: unknown) {
-    return String(e instanceof Error ? e.message : e);
+    return `${e instanceof Error ? e.message : String(e)} Apologise and offer the other open times from check_availability.`;
   }
 
   const calendarEventId = await createCalendarEvent(booking).catch(() => null);
   if (calendarEventId) booking.calendarEventId = calendarEventId;
 
+  // The table is already held — a confirmation failure must not read as a failed booking.
   const confirmation = await sendBookingConfirmation({
     to: guestPhone,
     guestName,
     partySize,
     startIso,
+  }).catch((e: unknown) => {
+    console.warn("[inbound] confirmation failed:", String(e));
+    return "none" as const;
   });
 
   const when = slotsToSpeech([startIso]);

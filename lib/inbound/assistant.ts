@@ -8,11 +8,11 @@ import { MODEL_CONFIG, TRANSCRIBER_CONFIG, VOICE_CONFIG } from "@/lib/relay/assi
 export const INBOUND_ASSISTANT_ID =
   process.env.VAPI_INBOUND_ASSISTANT_ID || "df8f440b-990b-4ae4-94cf-3c74d26b856e";
 
-function systemPrompt(today: string): string {
+function systemPrompt(): string {
   return `You are Skylark, the AI phone assistant for ${BUSINESS.name}, a ${BUSINESS.tagline}.
 You answer INBOUND calls from guests who want to book a table.
 
-TODAY'S DATE is ${today} (timezone: ${BUSINESS.timezone}).
+TODAY'S DATE is {{"now" | date: "%A, %B %d, %Y", "${BUSINESS.timezone}"}} (timezone: ${BUSINESS.timezone}). Resolved by Vapi at the start of every call.
 
 OPENING
 - You already greeted them. Continue naturally.
@@ -28,10 +28,11 @@ TOOLS — USE THESE, DO NOT GUESS
 
 BOOKING FLOW
 - If they say "book for 2 today" (or similar), call check_availability with party_size 2.
-- Offer available lunch times conversationally, e.g. "We have 1, 1:30, 2, 2:30, 3, or 4 — which works?"
+- Offer available lunch times conversationally, e.g. "We have 1, 1:30, or 2 — which works?" Only offer times the tool returned.
 - Collect: name, mobile number for confirmation text.
 - Read back: name, party size, time. Ask "Shall I book that?"
-- On clear yes → book_slot.
+- On clear yes → book_slot, passing the exact datetime value check_availability gave for that time.
+- If book_slot says a time is taken or invalid, apologise briefly and offer the other open times — never mention technical errors.
 
 STYLE — LIVE PHONE CALL
 - One or two short sentences per turn. No lists, no markdown.
@@ -82,7 +83,7 @@ export function buildInboundBookingTools(publicUrl: string) {
           properties: {
             datetime: {
               type: "string",
-              description: "ISO start time from check_availability (pass exact value)",
+              description: "Exact ISO datetime check_availability returned for the chosen time",
             },
             party_size: { type: "number" },
             guest_name: { type: "string" },
@@ -97,17 +98,13 @@ export function buildInboundBookingTools(publicUrl: string) {
 }
 
 export function buildInboundAssistantBody(publicUrl: string) {
-  const today = new Date().toLocaleDateString("en-CA", {
-    timeZone: BUSINESS.timezone,
-  });
-
   return {
     name: "Skylark (inbound booking)",
     firstMessage: SKYLARK_INTRO,
     transcriber: TRANSCRIBER_CONFIG,
     model: {
       ...MODEL_CONFIG,
-      messages: [{ role: "system", content: systemPrompt(today) }],
+      messages: [{ role: "system", content: systemPrompt() }],
       tools: buildInboundBookingTools(publicUrl),
     },
     voice: VOICE_CONFIG,

@@ -2,7 +2,7 @@ import { format, parseISO } from "date-fns";
 import { formatInTimeZone, fromZonedTime, toZonedTime } from "date-fns-tz";
 
 import { BUSINESS } from "./config";
-import { isSlotTaken, listBookings } from "./store";
+import { listBookings } from "./store";
 
 function todayInBusinessTz(): string {
   return formatInTimeZone(new Date(), BUSINESS.timezone, "yyyy-MM-dd");
@@ -13,6 +13,24 @@ export function lunchSlotStarts(date: string): string[] {
   return BUSINESS.lunchSlots.map((time) =>
     fromZonedTime(`${date}T${time}:00`, BUSINESS.timezone).toISOString(),
   );
+}
+
+/**
+ * Resolve whatever datetime the LLM sends ("2026-10-27T13:00:00", "...T17:00:00.000Z",
+ * "...T13:00:00-04:00") to the canonical UTC ISO of a real lunch slot, or null.
+ * Times without an offset are read as business-local, never server-local (UTC on Vercel).
+ */
+export function resolveSlotIso(input: string): string | null {
+  const raw = input.trim();
+  const date = raw.slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+
+  const hasOffset = /(Z|[+-]\d{2}:?\d{2})$/i.test(raw);
+  const instant = hasOffset ? new Date(raw) : fromZonedTime(raw, BUSINESS.timezone);
+  if (Number.isNaN(instant.getTime())) return null;
+
+  const localDate = formatInTimeZone(instant, BUSINESS.timezone, "yyyy-MM-dd");
+  return lunchSlotStarts(localDate).find((iso) => iso === instant.toISOString()) ?? null;
 }
 
 export function formatSlotForSpeech(iso: string): string {
@@ -27,13 +45,15 @@ export async function getAvailableLunchSlots(date?: string): Promise<{
 }> {
   const targetDate = date || todayInBusinessTz();
   const slots = lunchSlotStarts(targetDate);
-  const booked = new Set((await listBookings()).map((b) => b.startIso));
+  const booked = new Set(
+    (await listBookings()).map((b) => resolveSlotIso(b.startIso) ?? b.startIso),
+  );
 
   const available: string[] = [];
   const taken: string[] = [];
 
   for (const iso of slots) {
-    if (booked.has(iso) || (await isSlotTaken(iso))) taken.push(iso);
+    if (booked.has(iso)) taken.push(iso);
     else available.push(iso);
   }
 

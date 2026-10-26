@@ -25,8 +25,12 @@ export interface LunchBoard {
   bookings: Booking[];
 }
 
-/** Match bookings to grid slots regardless of ISO timezone suffix. */
+/** Match bookings to grid slots by business-local wall time (`yyyy-MM-ddTHH:mm`). */
 export function slotMatchKey(startIso: string): string {
+  if (/(Z|[+-]\d{2}:?\d{2})$/i.test(startIso)) {
+    return formatInTimeZone(new Date(startIso), BUSINESS.timezone, "yyyy-MM-dd'T'HH:mm");
+  }
+  // Legacy rows stored without an offset are already business-local.
   const date = startIso.slice(0, 10);
   const timeMatch = startIso.match(/T(\d{2}:\d{2})/);
   return timeMatch ? `${date}T${timeMatch[1]}` : startIso;
@@ -46,7 +50,7 @@ function formatSlotLabel(time: string): string {
 export async function getLunchBoard(date?: string): Promise<LunchBoard> {
   const targetDate = date || todayInBusinessTz();
   const allBookings = await listBookings();
-  const todayBookings = allBookings.filter((b) => b.startIso.startsWith(targetDate));
+  const todayBookings = allBookings.filter((b) => slotMatchKey(b.startIso).startsWith(targetDate));
 
   const bookingBySlot = new Map<string, Booking>();
   for (const booking of todayBookings) {

@@ -35,12 +35,11 @@ if (!PUBLIC_URL) {
 }
 
 const toolUrl = `${PUBLIC_URL}/api/vapi-inbound-tool`;
-const today = new Date().toLocaleDateString("en-CA", { timeZone: BUSINESS.timezone });
 
 const systemPrompt = `You are Skylark, the AI phone assistant for ${BUSINESS.name}, a ${BUSINESS.tagline}.
 You answer INBOUND calls from guests who want to book a table.
 
-TODAY'S DATE is ${today} (timezone: ${BUSINESS.timezone}).
+TODAY'S DATE is {{"now" | date: "%A, %B %d, %Y", "${BUSINESS.timezone}"}} (timezone: ${BUSINESS.timezone}). Resolved by Vapi at the start of every call.
 
 OPENING
 - You already greeted them. Continue naturally.
@@ -56,10 +55,11 @@ TOOLS — USE THESE, DO NOT GUESS
 
 BOOKING FLOW
 - If they say "book for 2 today" (or similar), call check_availability with party_size 2.
-- Offer available lunch times conversationally, e.g. "We have 1, 1:30, 2, 2:30, 3, or 4 — which works?"
+- Offer available lunch times conversationally, e.g. "We have 1, 1:30, or 2 — which works?" Only offer times the tool returned.
 - Collect: name, mobile number for confirmation text.
 - Read back: name, party size, time. Ask "Shall I book that?"
-- On clear yes → book_slot.
+- On clear yes → book_slot, passing the exact datetime value check_availability gave for that time.
+- If book_slot says a time is taken or invalid, apologise briefly and offer the other open times — never mention technical errors.
 
 STYLE — LIVE PHONE CALL
 - One or two short sentences per turn. No lists, no markdown.
@@ -105,7 +105,10 @@ const assistantBody = {
           parameters: {
             type: "object",
             properties: {
-              datetime: { type: "string" },
+              datetime: {
+                type: "string",
+                description: "Exact ISO datetime check_availability returned for the chosen time",
+              },
               party_size: { type: "number" },
               guest_name: { type: "string" },
               guest_phone: { type: "string" },
