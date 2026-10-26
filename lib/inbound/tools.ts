@@ -25,39 +25,76 @@ function parseArgs(raw: unknown): Record<string, unknown> {
   return {};
 }
 
-export async function handleCheckAvailability(args: unknown): Promise<string> {
-  const a = parseArgs(args);
-  const partySize = Number(a.party_size ?? a.partySize ?? BUSINESS.defaultPartySize);
-  const date = typeof a.date === "string" ? a.date : undefined;
+/** How many days ahead to look for an open day when the requested one is over or full. */
+const LOOKAHEAD_DAYS = 7;
 
-  let { date: targetDate, available } = await getAvailableLunchSlots(date);
+/** Open slots for one date: ledger first, minus anything busy on Google Calendar. */
+async function openSlotsOn(date?: string): Promise<{ date: string; available: string[]; taken: string[] }> {
+  const day = await getAvailableLunchSlots(date);
 
   // Calendar is a secondary source — if Google is down or the token expired, the
   // local ledger still answers so the caller never hears an error.
-  const busyFromGoogle = await getBusySlotStarts(targetDate, lunchSlotStarts(targetDate)).catch(
+  const busyFromGoogle = await getBusySlotStarts(day.date, lunchSlotStarts(day.date)).catch(
     (e: unknown) => {
       console.warn("[inbound] google freebusy failed, using ledger only:", String(e));
       return new Set<string>();
     },
   );
-  if (busyFromGoogle.size) {
-    available = available.filter((iso) => !busyFromGoogle.has(iso));
-  }
+  return { ...day, available: day.available.filter((iso) => !busyFromGoogle.has(iso)) };
+}
 
-  // State the date explicitly so relative dates ("tomorrow", "Friday") never hinge on the prompt template.
-  const today = formatInTimeZone(new Date(), BUSINESS.timezone, "EEEE, MMMM d, yyyy");
-  const checked = formatInTimeZone(
-    fromZonedTime(`${targetDate}T12:00:00`, BUSINESS.timezone),
+function nextDate(date: string): string {
+  const [y, m, d] = date.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10);
+}
+
+function dayLabel(date: string): string {
+  return formatInTimeZone(
+    fromZonedTime(`${date}T12:00:00`, BUSINESS.timezone),
     BUSINESS.timezone,
     "EEEE, MMMM d",
   );
+}
 
-  if (available.length === 0) {
-    return `Today is ${today}. No lunch tables left for party of ${partySize} on ${checked}. Suggest another day or ask them to call back later.`;
+function offerLine(date: string, available: string[], partySize: number): string {
+  const exactValues = available.map((iso) => `${formatSlotForSpeech(iso)} = ${iso}`).join("; ");
+  return `For lunch on ${dayLabel(date)} (${date}), party of ${partySize}, available times are: ${slotsToSpeech(available)}. Offer these naturally — do not read as a bullet list. When booking, pass the exact datetime for the chosen time to book_slot: ${exactValues}.`;
+}
+
+export async function handleCheckAvailability(args: unknown): Promise<string> {
+  const a = parseArgs(args);
+  const partySize = Number(a.party_size ?? a.partySize ?? BUSINESS.defaultPartySize);
+  const date = typeof a.date === "string" ? a.date : undefined;
+
+  // State the date explicitly so relative dates ("tomorrow", "Friday") never hinge on the prompt template.
+  const todayIso = formatInTimeZone(new Date(), BUSINESS.timezone, "yyyy-MM-dd");
+  const today = `Today is ${formatInTimeZone(new Date(), BUSINESS.timezone, "EEEE, MMMM d, yyyy")}. Lunch service runs ${slotsToSpeech(lunchSlotStarts(todayIso).slice(0, 1))} to ${slotsToSpeech(lunchSlotStarts(todayIso).slice(-1))}.`;
+
+  const requested = await openSlotsOn(date);
+  if (requested.date < todayIso) {
+    return `${today} ${dayLabel(requested.date)} is in the past. Ask which upcoming day they'd like.`;
+  }
+  if (requested.available.length) {
+    return `${today} ${offerLine(requested.date, requested.available, partySize)}`;
   }
 
-  const exactValues = available.map((iso) => `${formatSlotForSpeech(iso)} = ${iso}`).join("; ");
-  return `Today is ${today}. For lunch on ${checked} (${targetDate}), party of ${partySize}, available times are: ${slotsToSpeech(available)}. Offer these naturally — do not read as a bullet list. When booking, pass the exact datetime for the chosen time to book_slot: ${exactValues}.`;
+  // Requested day has nothing left: say why, then roll forward to the next open day.
+  // Today with unbooked-but-past slots means service is over, not that it sold out.
+  const serviceOver =
+    requested.date === todayIso && requested.taken.length < lunchSlotStarts(requested.date).length;
+  const why = serviceOver
+    ? "Lunch service for today has ended, so today can't be booked."
+    : `${requested.date === todayIso ? "Today" : dayLabel(requested.date)} is fully booked.`;
+
+  let probe = requested.date;
+  for (let i = 0; i < LOOKAHEAD_DAYS; i++) {
+    probe = nextDate(probe);
+    const next = await openSlotsOn(probe);
+    if (next.available.length) {
+      return `${today} ${why} Tell the caller that, then offer the next open day instead. ${offerLine(next.date, next.available, partySize)}`;
+    }
+  }
+  return `${today} ${why} No open lunch tables in the next ${LOOKAHEAD_DAYS} days. Apologize and suggest calling back later.`;
 }
 
 export async function handleBookSlot(args: unknown): Promise<string> {
